@@ -55,7 +55,7 @@ CREATE POLICY "app_likes_select_own"
 
 -- ------------------------------------------------------------
 -- 3. toggle_like(p_app_id uuid) RETURNS integer — SECURITY DEFINER
---    - 학교 계정(@danggok.hs.kr)이 아니면 예외를 던진다.
+--    - 학교 계정(@donong.hs.kr)이 아니면 예외를 던진다.
 --    - 이미 좋아요를 누른 상태면 delete(취소), 아니면 insert(등록).
 --    - apps.likes를 "실제 app_likes 행 개수"로 다시 계산해 갱신한다
 --      (비정규화 컬럼을 유지 — 프런트엔드가 likes 컬럼으로 그대로
@@ -75,8 +75,8 @@ DECLARE
 BEGIN
   caller_email := auth.jwt() ->> 'email';
 
-  IF caller_email IS NULL OR caller_email NOT LIKE '%@danggok.hs.kr' THEN
-    RAISE EXCEPTION '학교 계정(@danggok.hs.kr)으로 로그인해야 좋아요를 누를 수 있어요.';
+  IF caller_email IS NULL OR caller_email NOT LIKE '%@donong.hs.kr' THEN
+    RAISE EXCEPTION '학교 계정(@donong.hs.kr)으로 로그인해야 좋아요를 누를 수 있어요.';
   END IF;
 
   SELECT EXISTS (
