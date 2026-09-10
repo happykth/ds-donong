@@ -203,11 +203,11 @@
   }
 
   // ---------------------------------------------------------
-  // 3.5 인증 (Google OAuth, 학교 계정(danggok.hs.kr)만 쓰기 허용)
+  // 3.5 인증 (Google OAuth, 학교 계정(donong.hs.kr)만 쓰기 허용)
   //     읽기(카드 열람·필터·피드백 열람)는 로그인 없이 그대로 동작한다.
   //     보안의 본체는 서버측 RLS/RPC 검증이며, 여기서 하는 건 UX용 게이트다.
   // ---------------------------------------------------------
-  const SCHOOL_DOMAIN = "danggok.hs.kr";
+  const SCHOOL_DOMAIN = "donong.hs.kr";
   let currentUser = null; // { email } | null
   let serverLikedSet = new Set(); // 실제 모드: 내가 좋아요 누른 app_id 목록(RLS가 본인 행만 돌려줌)
   let lastAuthEmail = undefined; // 토큰 리프레시 등으로 같은 계정 재확인 시 재조회를 건너뛰기 위한 표식
