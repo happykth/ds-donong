@@ -10,6 +10,6 @@
 // 설정 방법은 AUTH_SETUP.md 참고.
 // ============================================================
 window.APP_CONFIG = {
-  SUPABASE_URL: "https://upkakhnpvepqhsbwdyjb.supabase.co",
-  SUPABASE_KEY: "sb_publishable_16HKdOESG_9U5OVNGZMeYQ_of--7oV1"
+  SUPABASE_URL: "https://eklvbdkigfolbxdtibtn.supabase.co/rest/v1/",
+  SUPABASE_KEY: "sb_publishable_sYfBBecb9P-NeufT3CRKYg_dyYcFoJv"
 };
