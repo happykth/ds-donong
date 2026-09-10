@@ -4,7 +4,7 @@
 -- ⚠️ 실행 전 반드시 읽어주세요
 --
 --   이 SQL을 실행하는 순간, 지금까지 "누구나 쓰기 가능"했던 정책이
---   사라지고 danggok.hs.kr 학교 계정으로 로그인한 사용자만 쓰기(작품 제출,
+--   사라지고 donong.hs.kr 학교 계정으로 로그인한 사용자만 쓰기(작품 제출,
 --   좋아요, 피드백)가 가능해집니다. 아직 Google 로그인 자체가 설정되지
 --   않았다면, 이 SQL을 실행하는 즉시 학생 전원이 아무것도 제출할 수 없는
 --   상태가 됩니다.
@@ -44,7 +44,7 @@ DROP POLICY IF EXISTS "Enable insert for everyone" ON apps;
 DROP POLICY IF EXISTS "Enable insert for all users" ON apps;
 DROP POLICY IF EXISTS "apps_public_insert" ON apps;
 
--- 새 insert 정책: 로그인(authenticated) + 학교 이메일(@danggok.hs.kr) +
+-- 새 insert 정책: 로그인(authenticated) + 학교 이메일(@donong.hs.kr) +
 -- submitted_by 위조 방지(자기 로그인 이메일과 일치해야 함)를 모두 만족해야
 -- 삽입이 허용된다.
 CREATE POLICY "apps_insert_school_only"
@@ -52,7 +52,7 @@ CREATE POLICY "apps_insert_school_only"
   FOR INSERT
   TO authenticated
   WITH CHECK (
-    (auth.jwt() ->> 'email') LIKE '%@danggok.hs.kr'
+    (auth.jwt() ->> 'email') LIKE '%@donong.hs.kr'
     AND submitted_by = (auth.jwt() ->> 'email')
   );
 
@@ -81,7 +81,7 @@ CREATE POLICY "feedback_insert_school_only"
   FOR INSERT
   TO authenticated
   WITH CHECK (
-    (auth.jwt() ->> 'email') LIKE '%@danggok.hs.kr'
+    (auth.jwt() ->> 'email') LIKE '%@donong.hs.kr'
     AND submitted_by = (auth.jwt() ->> 'email')
   );
 
@@ -117,8 +117,8 @@ BEGIN
   -- SECURITY DEFINER 함수라 RLS를 우회하므로, 이 검증이 곧 실질적인 보안이다.
   caller_email := auth.jwt() ->> 'email';
 
-  IF caller_email IS NULL OR caller_email NOT LIKE '%@danggok.hs.kr' THEN
-    RAISE EXCEPTION '학교 계정(@danggok.hs.kr)으로 로그인해야 좋아요를 누를 수 있어요.';
+  IF caller_email IS NULL OR caller_email NOT LIKE '%@donong.hs.kr' THEN
+    RAISE EXCEPTION '학교 계정(@donong.hs.kr)으로 로그인해야 좋아요를 누를 수 있어요.';
   END IF;
 
   UPDATE apps
@@ -142,7 +142,7 @@ $$;
 -- ------------------------------------------------------------
 -- Authentication → Policies에서 apps/feedback 각각에
 --   - select: public, 조건 없음(누구나 읽기 가능)
---   - insert: authenticated, danggok.hs.kr + submitted_by 일치 조건
+--   - insert: authenticated, donong.hs.kr + submitted_by 일치 조건
 -- 두 개씩만 남아 있는지 확인하세요. update/delete 정책은 없는 상태(=거부)여야
 -- 합니다. increment_likes는 Database → Functions에서 SECURITY DEFINER로
 -- 표시되는지 확인하세요.
