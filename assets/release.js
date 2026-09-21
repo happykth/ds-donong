@@ -1,1 +1,1 @@
-window.RELEASED_LESSON = 2;
+window.RELEASED_LESSON = 3;
