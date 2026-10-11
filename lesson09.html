@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>9차시 · 분류 — 로지스틱 회귀와 의사결정트리 · 데이터 과학 도농고</title>
-<link rel="stylesheet" href="assets/style.css?v=tb5">
+<title>8차시 · 회귀 평가 손계산 — 오차·MAE·MSE·결정계수 · 데이터 과학 도농고</title>
+<link rel="stylesheet" href="assets/style.css?v=tb16">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
-<script src="assets/release.js"></script>
-<script src="assets/gate.js"></script>
+<link rel="stylesheet" href="assets/review.css">
+
+<link rel="stylesheet" href="assets/lesson08-board.css?v=2">
 </head>
 <body>
 <div class="topbar"><div class="inner">
@@ -19,558 +20,282 @@
 
 <div class="wrap">
 <main>
-  <span class="eyebrow">Ⅲ. 데이터 모델링과 평가 · 9차시</span>
-  <h1>분류 · <span class="a">로지스틱 회귀와 의사결정트리</span></h1>
+  <span class="eyebrow">Ⅲ. 데이터 모델링과 평가 · 8차시</span>
+  <h1>회귀 평가 손계산 · <span class="a">오차·MAE·MSE·결정계수</span></h1>
   <div class="under"></div>
 
   <div class="quote">
-    <div class="q">"문제를 잘 정의하면 절반은 푼 것이다."</div>
-    <span class="by">존 듀이 『논리학』(1938) — 성공의 기준선을 정하는 일부터가 분류 문제의 절반입니다</span>
+    <div class="q">"계산의 목적은 숫자가 아니라 통찰이다."</div>
+    <span class="by">리처드 해밍 (1962) · 계산 과정과 결과의 의미를 함께 살펴봅니다.</span>
+    <span class="who"><b>리처드 해밍</b>(1915~1998)은 미국의 수학자입니다. 오류가 생겨도 스스로 찾아 고치는 부호(해밍 코드)를 만들어 오늘날 메모리와 통신에 쓰이게 했고, 컴퓨터 분야의 최고 상인 튜링상을 받았습니다.</span>
   </div>
-  <p style="text-align:right;font-size:.85rem;margin:-4px 0 14px"><a href="lesson09-deep.html">🔎 더 자세한 판 보기 →</a></p>
 
-  <p class="lead">7차시의 영화 데이터로 이번에는 <b>관객 수가 정한 기준 이상인지</b> 분류합니다. 관객 수를 숫자로 예측하는 회귀와, 기준 충족 여부를 예측하는 분류의 차이를 살펴봅니다. 먼저 학급에서 관객 수 기준을 정하고, 두 모델의 확률과 판단 규칙을 비교합니다.</p>
+  <p class="lead">오늘은 작은 표의 실젯값과 예측값을 이용해 <b>오차, 평균절대오차, 평균제곱오차, 결정계수</b>를 계산합니다. 각 계산이 무엇을 비교하는지 확인합니다. 계산이 막히면 실젯값과 예측값의 차이를 구하는 첫 칸부터 채웁니다.</p>
+
+  <p class="mini">활동지의 두 문제는 손으로 계산이 떨어지도록 고른 수이며 실제 관측값이 아닙니다.</p>
 
   <div class="make-banner">
     <div class="t">🎯 오늘 하는 것</div>
     <ul>
-      <li><b>기준 정하기</b> — "흥행 성공"의 관객 수 기준선을 학급이 함께 정한다 (라벨은 사람이 정한다)</li>
-      <li><b>바이브 코딩</b> — 로지스틱 회귀로 성공 확률을, 의사결정트리로 판단 규칙을 만든다</li>
-      <li><b>관찰</b> — 트리 그림에서 모델이 질문을 던지는 순서를 읽는다</li>
+      <li><b>손계산 활동지</b> — 기본 문제와 연습 문제를 오차 · 절댓값 · 제곱 · MAE · MSE · R²의 순서로 손으로 계산한다</li>
+      <li><b>R²의 뜻</b> — 평균값 기준과 제곱오차 합을 비교한 값임을 손계산으로 확인한다</li>
     </ul>
   </div>
 
-  <h2>0. 왜 배우나</h2>
-  <p>스팸 메일 필터, 감염병 검사의 양성·음성 판정처럼 세상의 많은 예측은 숫자가 아니라 <b>"인가, 아닌가"</b>를 답합니다. 문제를 받았을 때 회귀 문제인지 분류 문제인지 가려내는 눈을 오늘 기릅니다.</p>
+  <h2>0. 오늘의 목표</h2>
+  <p>7차시에는 앱이 표시한 R²와 평균 오차를 읽었습니다. 오늘은 손으로 떨어지는 작은 표로 같은 지표를 처음부터 계산합니다. 계산 순서를 직접 밟아 보면 그 점수가 무엇과 무엇을 비교한 값인지 설명할 수 있습니다.</p>
+  <ul class="steps">
+    <li>실젯값과 예측값에서 <b>오차·절대오차·제곱오차</b>를 구할 수 있다.</li>
+    <li><b>평균절대오차(MAE)와 평균제곱오차(MSE)</b>를 손으로 계산하고, 두 값의 단위가 다른 까닭을 설명할 수 있다.</li>
+    <li><b>결정계수(R²)</b>를 평균값 기준의 제곱오차 합과 비교해 계산하고, 그 값이 무엇과 무엇을 견준 결과인지 설명할 수 있다.</li>
+  </ul>
 
-  <h2>1. 개념 이해 — 회귀에서 분류로</h2>
-  <div class="tbquote">
-    <div class="h">📖 교과서의 정의 <span class="src">『데이터 과학』 135·136쪽</span></div>
-    <p class="q">"분류 모델 중 이진 분류는 어떤 특성을 '띤다' 또는 '띠지 않는다' 두 가지 경우의 수 중 하나로 예측하는 것을 말한다." <span class="src">(135쪽)</span></p>
-    <p class="q">"로지스틱 회귀는 선형 회귀 모델을 로지스틱 함수와 결합하여 각 범주에 해당할 확률을 바탕으로 분류하는 방법이다." <span class="src">(135쪽)</span></p>
-    <p class="q">"… 출력값이 0.5보다 크면 양성, 작으면 음성으로 분류한다." <span class="src">(136쪽)</span></p>
-    <p class="t">→ 로지스틱 회귀는 양성일 확률을 추정합니다. 이 실습에서는 <b>0.5 이상이면 양성, 미만이면 음성</b>으로 분류합니다. 관객 수로 정답을 만드는 기준과, 확률로 예측을 정하는 문턱값은 서로 다릅니다.</p>
-  </div>
-  <table class="daymap">
-    <thead><tr><th>구분</th><th>묻는 말</th><th>답의 형태</th><th>영화 데이터라면</th></tr></thead>
-    <tbody>
-      <tr><td><b>회귀</b> (6~8차시)</td><td>얼마나?</td><td>연속적인 숫자</td><td>총 관객 수는 몇 명일까</td></tr>
-      <tr><td><b>분류</b> (오늘)</td><td>어느 쪽?</td><td>정해진 범주 중 하나</td><td>흥행에 성공할까, 못 할까</td></tr>
-    </tbody>
-  </table>
-  <p>범주가 두 개면 이진 분류, 세 개 이상이면 다중 분류입니다. 오늘의 “성공/기준 미달”은 이진 분류입니다. 교과서의 책 장르처럼 여러 범주 중 하나를 고르는 문제는 다중 분류입니다.</p>
-  <p>로지스틱 회귀는 입력 변수의 가중합에 시그모이드 함수를 적용해 양성일 확률을 추정합니다. 선형 회귀를 먼저 학습한 뒤 출력을 바꾸는 방식은 아닙니다. 분류에 맞게 가중치를 학습하고, 추정 확률에 문턱값을 적용해 범주를 정합니다. 의사결정트리도 확률을 추정할 수 있지만, 이 시간에는 <b>조건에 따라 가지가 나뉘는 판단 과정</b>에 주목합니다.</p>
+  <h2>1. 개념 이해 — 계산식 한눈에 보기</h2>
 
-  
-  <figure class="interactive" data-fig="sigmoidPath">
-    <div class="widget" data-w="sigmoidPath">
-<svg viewBox="0 0 720 336" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="시험용 66편의 가중합과 추정 확률을 시그모이드 곡선 위에 나타낸 그림. 문턱값 슬라이더를 옮기면 성공으로 예측하는 편수와 정확도가 바뀜">
-  <!-- 축선: 본판 가로·세로, 확률 띠 세로 -->
-  <g stroke="#e3ddcf" stroke-width="1">
-    <line x1="56" y1="268" x2="556" y2="268"/>
-    <line x1="56" y1="44" x2="56" y2="268"/>
-    <line x1="600" y1="44" x2="600" y2="268"/>
-  </g>
-  <!-- 성공으로 예측 영역(확률 띠) -->
-  <rect class="zone" x="600" y="44" width="92" height="112" fill="#2f9e5f" opacity="0.10"/>
-  <!-- 확률 1 점근선 -->
-  <line x1="56" y1="44" x2="556" y2="44" stroke="#b9b3a5" stroke-width="1" stroke-dasharray="5 4"/>
-  <!-- 축 이름 -->
-  <g font-size="15" fill="#6b7385">
-    <text x="306" y="32" text-anchor="middle">가중합 축 → 시그모이드 곡선</text>
-    <text x="646" y="32" text-anchor="middle">확률 축</text>
-  </g>
-  <!-- 점근선 설명 -->
-  <g font-size="14" fill="#6b7385">
-    <text class="note1" x="156" y="62">확률 1 = 닿지 않는 선</text>
-    <text class="note2" x="156" y="82">σ(5)=0.9933 · σ(10)=0.99995</text>
-  </g>
-  <!-- 가중합 눈금 -->
-  <g font-size="14" fill="#6b7385" text-anchor="middle">
-    <text x="131" y="286">−6</text>
-    <text x="231" y="286">−4</text>
-    <text x="331" y="286">−2</text>
-    <text x="431" y="286">0</text>
-    <text x="531" y="286">2</text>
-  </g>
-  <!-- 확률 눈금 -->
-  <g font-size="14" fill="#6b7385" text-anchor="end">
-    <text x="48" y="273">0</text>
-    <text x="48" y="161">0.5</text>
-    <text x="48" y="49">1</text>
-  </g>
-  <!-- 시그모이드 곡선 -->
-  <polyline class="curve" fill="none" stroke="#6b7385" stroke-width="2.5" points=""/>
-  <!-- 66편: 본판 점 · 띠 착지 점 · 클릭 히트원 -->
-  <g class="mpts"></g>
-  <g class="bpts"></g>
-  <g class="hits"></g>
-  <!-- 문턱선과 라벨 -->
-  <line class="tline" x1="56" y1="156" x2="692" y2="156" stroke="#d64545" stroke-width="2"/>
-  <text class="zlab" x="604" y="60" font-size="14" fill="#2f9e5f">성공으로 예측</text>
-  <text class="tlab" x="60" y="148" font-size="14" fill="#d64545">문턱값 0.50</text>
-  <!-- 수치 줄과 선택 줄 -->
-  <g font-size="15" fill="#1c2230">
-    <text class="n1" x="56" y="304">맞힌 편수 61/66</text>
-    <text class="n2" x="232" y="304">정확도 0.924</text>
-    <text class="n3" x="376" y="304">성공으로 예측 1편</text>
-    <text class="n4" x="536" y="304">기준 미달로 예측 65편</text>
-    <text class="sel" x="56" y="326">점을 눌러 한 편의 확률 확인</text>
-  </g>
-</svg>
-<div class="wctl">
-  <label>문턱값 <input type="range" class="thr" min="0.05" max="0.95" step="0.05" value="0.5"></label>
-  <button class="wbtn" type="button" data-k="path">경로 따라가기</button>
-  <button class="wbtn" type="button" data-k="top">확률이 가장 높은 영화</button>
-  <button class="wbtn" type="button" data-k="miss">확률은 낮고 실제는 성공</button>
-</div>
-</div>
-    <figcaption>그림의 66편은 시험용 자료입니다. 라벨 기준은 100만 명이고, 확률은 4절 표와 같은 모델에서 미리 계산해 저장한 값입니다.</figcaption>
-  </figure>
-
-
-  <details class="glossary"><summary>더 알아보기 — 실제 사례 · 챌린저호 O-링과 로지스틱 회귀</summary><div class="gin">
-  <h3>챌린저호 O-링과 로지스틱 회귀</h3>
-  <p>1986년 1월 28일 미국 항공우주국 우주왕복선 챌린저호가 발사 73초 만에 공중분해되었고 승무원 7명이 사망했습니다. 사고 이전 23회 발사에 발사 당시 기온과 O-링 손상 여부가 기록으로 남아 있었습니다. 손상이 기록된 발사는 23회 중 7회입니다. 1989년 미국통계학회 학술지(JASA)에 실린 달랄 연구진의 분석은 로지스틱 회귀로 화씨 31도의 발사 조건에서 접합부 O-링 파손 확률을 최소 13%로, 화씨 60도로 연기했다면 최소 2%로 계산했습니다.</p>
-  <table class="daymap">
-    <thead><tr><th>항목</th><th>챌린저호 사례</th><th>이 차시 개념과의 연결</th></tr></thead>
-    <tbody>
-      <tr><td><b>무엇을 예측했나</b></td><td>O-링 손상 여부(손상 있음·손상 없음 두 범주)</td><td>오늘의 성공·기준 미달과 같은 이진 분류</td></tr>
-      <tr><td><b>입력</b></td><td>발사 당시 기온(화씨) 하나</td><td>오늘은 스크린 수·상영 횟수·성수기·장르·국가 다섯</td></tr>
-      <tr><td><b>자료의 범위</b></td><td>23회 발사, 손상 기록 7회, 최저 기온 화씨 53도</td><td>발사 예정 기온 화씨 31도는 자료 바깥</td></tr>
-    </tbody>
-  </table>
-  <figure class="case" style="margin:14px 0 6px">
-    <img src="img/lesson09_case1.png" alt="발사 기온과 O-링 손상 여부의 산점도 위에 로지스틱 회귀 곡선을 그린 그래프. 손상 있음 7회는 빨간 점, 손상 없음 16회는 회색 점이며 화씨 53도 아래는 자료가 없는 구간으로 음영 처리되어 있다" style="width:100%;height:auto">
-    <figcaption style="margin-top:6px;font-size:.84rem;color:var(--text-soft)">자료는 사고 이전 23회 발사의 O-링 기록 · 곡선은 이 자료로 수업용 재계산 · 확률 계산은 Dalal 외(1989, JASA)</figcaption>
-  </figure>
-  <p>오늘 만든 로지스틱 회귀와 같은 형태로 입력 하나(기온)에서 확률을 추정하고 문턱값으로 판단을 정합니다. 학습 자료에 화씨 53도보다 낮은 발사가 하나도 없어 자료 바깥 구간의 확률을 그대로 받아들일 수 없다는 한계가 있습니다. 9차시의 기준과 입력을 사람이 정한다는 논점으로 이어집니다.</p>
-  <p class="mini">출처: <a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.1989.10478858" target="_blank" rel="noopener">Dalal, Fowlkes &amp; Hoadley (1989), JASA 84(408)</a></p>
-  </div></details>
-
-  <h2>2. 성공의 기준선 — 라벨은 사람이 정한다</h2>
-  <div class="tbquote">
-    <div class="h">📖 교과서의 정의 <span class="src">『데이터 과학』 138쪽</span></div>
-    <p class="q">"레이블은 모델이 예측하고자 하는 정답 값을 의미한다." <span class="src">(138쪽)</span></p>
-    <p class="t">→ 분류 모델을 만들려면 각 데이터에 정답(레이블)이 먼저 붙어 있어야 한다. 그런데 우리 영화 표에는 "성공/기준 미달" 열이 없다.</p>
-  </div>
-  <p>영화 표에는 관객 수가 있지만 “흥행 성공”이라는 라벨은 없습니다. 수업에서는 <b>기록된 누적 관객 수가 100만 명 이상이면 성공(1), 미만이면 기준 미달(0)</b>로 정합니다. 이는 분류 연습을 위한 정의입니다. 제작비·수익 자료가 없으므로 실제 흑자와 적자를 뜻하지 않습니다. 다른 기준을 선택하면 라벨과 예측 과제도 달라집니다.</p>
-
-  
-  <figure class="interactive" data-fig="labelline">
-    <div class="widget" data-w="labelline">
-  <svg viewBox="0 0 720 348" role="img" aria-label="216편의 관객 수 분포와 성공 기준선. 기준선을 옮기면 성공 라벨 편수와 경계에 걸린 두 편이 바뀌고, 이유를 적어야 정확도가 공개되는 그림">
-    <text x="56" y="26" text-anchor="start" font-size="15" font-weight="800" fill="#1c2230">216편의 관객 수 분포 · 가로축 로그</text>
-    <g class="bars"></g>
-    <line x1="56" y1="214" x2="430" y2="214" stroke="#e3ddcf" stroke-width="1.5"/>
-    <text x="56" y="234" text-anchor="middle" font-size="14" fill="#6b7385">1천</text>
-    <text x="144" y="234" text-anchor="middle" font-size="14" fill="#6b7385">1만</text>
-    <text x="232" y="234" text-anchor="middle" font-size="14" fill="#6b7385">10만</text>
-    <text x="320" y="234" text-anchor="middle" font-size="14" fill="#6b7385">100만</text>
-    <text x="408" y="234" text-anchor="middle" font-size="14" fill="#6b7385">1000만</text>
-    <line class="thrline" x1="320" y1="60" x2="320" y2="222" stroke="#d64545" stroke-width="2"/>
-    <rect class="thrhandle" x="315" y="46" width="10" height="16" rx="3" fill="#d64545"/>
-
-    <g class="bpanel">
-      <rect x="452" y="40" width="244" height="92" rx="6" fill="#fff" stroke="#e3ddcf" stroke-width="1.5"/>
-      <text class="b1" x="464" y="66" font-size="15" font-weight="800" fill="#1c2230"></text>
-      <text class="b2" x="464" y="90" font-size="14" fill="#6b7385"></text>
-      <text class="b3" x="464" y="116" font-size="14" font-weight="800" fill="#b07a00"></text>
-    </g>
-
-    <g class="cpanel">
-      <rect x="452" y="144" width="244" height="112" rx="6" fill="#fff" stroke="#2b7fd6" stroke-width="2"/>
-      <text x="464" y="168" font-size="14" font-weight="800" fill="#6b7385">시험용 66편 정확도</text>
-      <text x="464" y="196" font-size="14" fill="#1c2230">로지스틱 회귀</text>
-      <text class="clog" x="684" y="196" text-anchor="end" font-size="17" font-weight="800" fill="#b07a00" style="font-variant-numeric:tabular-nums"></text>
-      <text x="464" y="222" font-size="14" fill="#1c2230">의사결정트리</text>
-      <text class="ctree" x="684" y="222" text-anchor="end" font-size="17" font-weight="800" fill="#b07a00" style="font-variant-numeric:tabular-nums"></text>
-      <text x="464" y="246" font-size="14" fill="#6b7385">학습용 150편 · 문턱값 0.5</text>
-    </g>
-    <g class="cover">
-      <rect x="452" y="144" width="244" height="112" rx="6" fill="#fff" opacity="0.92"/>
-      <text class="cv1" x="574" y="188" text-anchor="middle" font-size="14" font-weight="800" fill="#d64545"></text>
-      <text class="cv2" x="574" y="212" text-anchor="middle" font-size="14" fill="#6b7385"></text>
-    </g>
-
-    <line x1="56" y1="270" x2="696" y2="270" stroke="#e3ddcf" stroke-width="1"/>
-    <text class="dhead" x="56" y="290" font-size="14" font-weight="800" fill="#6b7385"></text>
-    <circle cx="62" cy="308" r="5" fill="#b07a00"/>
-    <text class="dhi" x="76" y="312" font-size="14" fill="#1c2230"></text>
-    <circle cx="62" cy="330" r="5" fill="#b9b3a5"/>
-    <text class="dlo" x="76" y="334" font-size="14" fill="#1c2230"></text>
-  </svg>
-  <div class="wctl">
-    <label>성공 기준 <input type="range" class="thr" min="0" max="9" step="1" value="5"> <span class="wv">100만 명</span></label>
-    <button class="wbtn" type="button" data-r="언론이 쓰는 흥행 기준">언론이 쓰는 흥행 기준</button>
-    <button class="wbtn" type="button" data-r="216편 중 10% 안팎">216편 중 10% 안팎</button>
-    <button class="wbtn" type="button" data-r="우리 반의 체감 대흥행">우리 반의 체감 대흥행</button>
-    <button class="wbtn" type="button" data-r="성공 라벨 수 확보">성공 라벨 수 확보</button>
-    <input type="text" class="wtxt" maxlength="40" placeholder="직접 입력 · 8자 이상">
-    <button class="wbtn wgo" type="button" disabled>내 기준 제출</button>
-    <span class="wout"></span>
-  </div>
-</div>
-    <figcaption>기준선을 옮기면 성공 라벨의 수와 경계에 걸린 영화가 바뀝니다. 라벨을 바꾼 뒤에는 '다시 학습'을 눌러야 정확도가 다시 나타납니다.</figcaption>
-  </figure>
-
-
-  <h2>3. 실습 — 영화 흥행 분류기 (바이브 코딩)</h2>
-  <p>4차시의 영화별 표(<a href="https://github.com/greatsong/modudata/blob/bb860932644270ad1199f10d3e7670e30231bce4/data/kobis_movies.csv" target="_blank" rel="noopener"><code>kobis_movies.csv</code></a>)로 앱을 만듭니다. <b>개봉 전 흥행 예측이 목표라면 입력도 개봉 전에 확보한 값이어야 합니다.</b> 그러나 이 표의 <code>first_scrn</code>·<code>first_show</code>는 일별 10위권에 처음 관측된 날의 집계값입니다. 따라서 아래 코드는 기록된 자료를 이용한 분류 연습이며, 개봉 전 예측 성능을 검증한 결과가 아닙니다. <code>total_audi</code>도 수집 자료에 기록된 누적값으로, 모든 영화의 최종 관객 수를 보장하지 않습니다.</p>
-
-  <ol class="steps">
-    <li><span class="st">① 샘플 프롬프트 — 그대로 붙여 넣기</span>
-      <div class="codewrap prompt"><span class="label">① 프롬프트</span><button class="copy-btn">복사</button><pre>"흥행 분류기" 스트림릿 앱을 파일 하나로 만들어 줘.
-데이터: https://raw.githubusercontent.com/greatsong/modudata/bb860932644270ad1199f10d3e7670e30231bce4/data/kobis_movies.csv
-이 파일의 열 이름은 movieCd, movieNm, openDt, genre, nation, first_scrn, first_show, first_date, peak, first_week_audi, total_audi, days_in_top10이고, 인코딩은 UTF-8이야.
-수업의 분석 대상은 2025년 9월부터 2026년 7월까지 개봉한 216편이야.
-total_audi가 100만 명 이상이면 성공, 미만이면 기준 미달로 분류해 줘.
-기준은 50만·100만·300만 명 중 고를 수 있게 해 줘.
-입력은 first_scrn·first_show·peak·genre·nation을 사용해 줘.
-first_scrn·first_show는 개봉일이 아니라 10위권에 처음 관측된 날의 집계야.
-first_week_audi·total_audi·days_in_top10은 입력에서 제외해 줘.
-영화 코드 순으로 정렬해 열 편 중 앞 세 편을 시험용으로 고정하고,
-학습용으로만 학습과 표준화를 해 줘. 두 모델은 같은 시험용 자료로 평가해 줘.
-학습용과 시험용의 영화 편수를 화면에 적어 줘.
-시험용 자료로 계산한 정확도를 화면에 표시해 줘.
-시험용 영화 하나를 고르면 로지스틱 회귀의 추정 확률과 예측 범주를 보여 줘.
-확률이 0.5 이상이면 성공으로 분류하고 실제 라벨도 함께 보여 줘.
-시험용 영화의 추정 확률을 높은 순으로 막대그래프로 그리고,
-문턱값 0.5 선을 함께 표시하고 실제 성공과 기준 미달을 색으로 구분해 줘.
-영화 제목이 겹치지 않게 가로축 글자를 기울여 줘.
-그래프는 plotly로 그려 줘.
-이 코드의 평가는 기록된 자료의 분류 연습이며, 개봉 전 예측 성능이 아님을 표시해 줘.
-필요한 라이브러리 목록(requirements.txt)도 같이 줘. 버전 숫자 없이 이름만.</pre></div>
-      <details class="sample"><summary>선생님이 실행해 확인한 예시 코드</summary><p class="mini">main.py와 requirements.txt, 두 파일로 저장합니다. 본문 표와 같은 자료·분할을 사용합니다. 학습용은 150편, 시험용은 66편입니다. 라이브러리 버전이나 설정을 바꾸면 결과가 달라질 수 있습니다.</p><div class="codewrap code"><span class="label">main.py</span><pre># main.py — 기록된 관객 수의 기준 충족 여부를 분류한다
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier, export_text, export_graphviz
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
-
-MOVIES = "https://raw.githubusercontent.com/greatsong/modudata/bb860932644270ad1199f10d3e7670e30231bce4/data/kobis_movies.csv"
-
-
-@st.cache_data
-def load_data():
-    df = pd.read_csv(MOVIES, dtype={"movieCd": str}).sort_values("movieCd").reset_index(drop=True)
-    df["장르"] = df["genre"].str.split("|").str[0]
-    df["국가"] = df["nation"].str.split("|").str[0]
-    return df
-
-
-df = load_data()
-기준 = st.selectbox("성공 기준 (총 관객)", [500_000, 1_000_000, 3_000_000], index=1)
-df["성공"] = (df["total_audi"] &gt;= 기준).astype(int)
-st.caption(f"성공 {df['성공'].sum()}편 / {len(df)}편")
-st.info("기록된 자료의 분류 연습입니다. 개봉 전 예측 성능을 뜻하지 않습니다.")
-
-is_test = df.index % 10 &lt; 3
-features = df[["first_scrn", "first_show", "peak", "장르", "국가"]]
-Xtr = pd.get_dummies(features[~is_test])
-Xte = pd.get_dummies(features[is_test]).reindex(columns=Xtr.columns, fill_value=0)
-X = pd.concat([Xtr, Xte]).sort_index()
-is_test = df.index % 10 &lt; 3                      # 열 편 중 앞 세 편을 시험용으로
-st.caption(f"학습용 {(~is_test).sum()}편 · 시험용 {is_test.sum()}편 (2025년 9월~2026년 7월 개봉 216편)")
-Xtr, Xte = X[~is_test], X[is_test]
-ytr, yte = df["성공"][~is_test], df["성공"][is_test]
-
-scaler = StandardScaler().fit(Xtr)
-logi = LogisticRegression(max_iter=2000).fit(scaler.transform(Xtr), ytr)
-tree = DecisionTreeClassifier(max_depth=3, random_state=0).fit(Xtr, ytr)
-
-c1, c2 = st.columns(2)
-prob = logi.predict_proba(scaler.transform(Xte))[:, 1]
-c1.metric("로지스틱 회귀 정확도", f"{accuracy_score(yte, (prob &gt;= 0.5).astype(int)):.3f}")
-c2.metric("의사결정트리 정확도", f"{accuracy_score(yte, tree.predict(Xte)):.3f}")
-확률표 = pd.DataFrame({"영화": df.loc[is_test, "movieNm"].values,
-                     "추정 확률": prob,
-                     "실제": ["성공" if v else "기준 미달" for v in yte]})
-확률표 = 확률표.sort_values("추정 확률", ascending=False)
-fig = px.bar(확률표, x="영화", y="추정 확률", color="실제",
-             color_discrete_map={"성공": "#b07a00", "기준 미달": "#b9b3a5"})
-fig.add_hline(y=0.5, line_dash="dash", annotation_text="문턱값 0.5")
-fig.update_layout(xaxis_tickangle=-60, height=460, xaxis_title=None)
-st.plotly_chart(fig, width="stretch")
-st.caption("막대는 시험용 66편의 추정 확률입니다. 색은 실제 라벨입니다.")
-
-choices = df.loc[is_test].copy()
-selected = st.selectbox("시험용 영화", list(range(len(choices))),
-                        format_func=lambda i: choices.iloc[i]["movieNm"])
-p = float(prob[selected])
-st.write(f"추정 성공 확률: {p:.1%}")
-st.write("예측:", "성공" if p &gt;= 0.5 else "기준 미달")
-st.write("실제 라벨:", "성공" if int(yte.iloc[selected]) else "기준 미달")
-st.caption("이 확률은 모델의 추정값이며 실제 성공 가능성을 보장하지 않습니다.")</pre></div>
-      <div class="codewrap code"><span class="label">두 번째 파일 — <button type="button" class="fname">requirements.txt</button></span><button class="copy-btn">복사</button><pre>streamlit
-pandas
-plotly
-scikit-learn</pre></div></details>
-    </li>
-    <li><span class="st">② AI가 준 코드 — 실행하고 확률을 읽는다</span><br>
-      받은 코드를 <b>main.py</b> 파일과 <b>requirements.txt</b> 파일 두 개로 저장해 실행합니다. 화면에 새로 나타나는 그림에는 시험용 66편의 추정 확률이 막대로 표시되고 문턱값 0.5 선이 함께 그려집니다. 시험용 영화를 하나 고르면 추정 성공 확률이 나타납니다. 확률이 0.5 이상이면 성공, 미만이면 기준 미달로 분류합니다. 실제 라벨과 비교해 맞힌 사례와 틀린 사례를 찾아봅니다. 화면에 함께 표시되는 <b>정확도</b>를 기록해 두세요.</li>
-    <li><span class="st">③ 개선 프롬프트 — 같은 문제를 트리에게</span>
-      <div class="codewrap improve"><span class="label">③ 개선</span><button class="copy-btn">복사</button><pre>의사결정트리로도 만들어서 어떤 질문을 어떤 순서로 던지는지
-그림으로 보여 줘. 두 모델의 정확도를 나란히 비교해 줘.</pre></div>
-      <details class="sample"><summary>선생님이 실행해 확인한 예시 코드</summary><p class="mini">앞 코드 끝에 이어 붙입니다</p><div class="codewrap code"><span class="label">main.py에 이어 붙일 부분</span><pre># 트리가 던지는 질문의 순서
-st.subheader("트리는 어떤 질문을 먼저 던지나")
-st.graphviz_chart(export_graphviz(tree, out_file=None, feature_names=list(X.columns),
-                                  class_names=["기준 미달", "성공"], filled=True))
-st.code(export_text(tree, feature_names=list(X.columns), max_depth=3))
-st.caption("학습용과 시험용을 어떻게 나누느냐에 따라 정확도는 달라집니다.")</pre></div></details>
-    </li>
-  </ol>
-
-  <div class="callout tip">
-    <div class="h">💡 변수 이름보다 실제 집계 시점을 확인합니다</div>
-    <p>개봉 전에 예측하려면 first_scrn·first_show를 포함해 입력의 수집 시점을 다시 확인해야 합니다. 미래에 알게 되는 값을 빼 달라는 문장만으로 누수를 막을 수는 없습니다. 다음 시간에는 예측 시점에 사용할 수 없는 값을 입력에 넣었을 때의 문제를 살펴봅니다.</p>
-  </div>
-
-  <h2>4. 두 모델 비교 — 확률로 답하는 모델, 질문으로 답하는 모델</h2>
-  <p>트리는 조건을 따라 데이터를 나누는 과정을 보여 줍니다. 위에서부터 조건과 가지를 읽으며 한 영화가 어느 끝마디에 도착하는지 따라가 봅니다. 첫 번째 분기만으로 변수의 중요도 전체를 판단할 수는 없습니다. 이 코드의 특성 중요도는 <b>각 변수가 여러 분기에서 클래스의 섞임을 얼마나 줄였는지</b>를 데이터 수로 가중해 합산한 값입니다.</p>
-  <table class="daymap">
-    <thead><tr><th>모델</th><th>답하는 방식</th><th>정확도 (기준 100만, 동일 시험용 66편)</th></tr></thead>
-    <tbody>
-      <tr><td><b>로지스틱 회귀</b></td><td>0~1 사이의 성공 확률</td><td><b>0.924</b></td></tr>
-      <tr><td><b>의사결정트리</b></td><td>질문의 순서(규칙)</td><td><b>0.939</b></td></tr>
-    </tbody>
-  </table>
-  <p class="mini">두 모델은 같은 학습용 150편과 시험용 66편을 사용했습니다. 시험용 자료는 학습과 표준화의 기준 계산에서 제외합니다. 표의 수치는 이 자료·분할·설정에서 얻은 값입니다. 다른 분할에서도 비슷한 결과가 나오는지는 별도로 확인해야 합니다.</p>
-  <figure class="interactive" data-fig="twoDials">
-    <div class="widget" data-w="twoDials">
-<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="위는 실제 관객 수, 아래는 추정 확률. 같은 66편을 두 층에 나란히 놓고 라벨 기준선과 문턱선을 각각 움직이는 그림">
-<!-- 위 = 정답 층: 가로축 누적 관객 수 로그 척도(10^3~10^7.25 → 72~676) -->
-<text x="56" y="32" font-size="15" fill="#6b7385">정답 층 · 가로축 누적 관객 수(명)</text>
-<rect x="56" y="40" width="640" height="92" fill="#b07a00" opacity=".06"/>
-<g font-size="14" fill="#6b7385" text-anchor="middle">
-<text x="72" y="150">1천</text>
-<text x="214.1" y="150">1만</text>
-<text x="356.2" y="150">10만</text>
-<text x="498.4" y="150">100만</text>
-<text x="640.5" y="150">1000만</text>
-</g>
-<g class="dotT"></g>
-<line class="lline" x1="498.4" y1="40" x2="498.4" y2="132" stroke="#b07a00" stroke-width="2.5"/>
-<text class="ltext" x="506.4" y="56" font-size="14" fill="#b07a00">라벨 기준 100만 명</text>
-<!-- 아래 = 예측 층: 가로축 추정 확률 0~1 선형(72~676) -->
-<text x="56" y="188" font-size="15" fill="#6b7385">예측 층 · 가로축 추정 확률(단위 없음)</text>
-<rect x="56" y="196" width="640" height="92" fill="#2b7fd6" opacity=".05"/>
-<rect class="grn" x="374" y="196" width="302" height="92" fill="#2f9e5f" opacity=".10"/>
-<g font-size="14" fill="#6b7385" text-anchor="middle">
-<text x="72" y="306">0</text>
-<text x="223" y="306">0.25</text>
-<text x="374" y="306">0.5</text>
-<text x="525" y="306">0.75</text>
-<text x="676" y="306">1</text>
-</g>
-<g class="dotB"></g>
-<line class="tline" x1="374" y1="196" x2="374" y2="288" stroke="#d64545" stroke-width="2.5"/>
-<text class="ttext" x="382" y="212" font-size="14" fill="#2f9e5f">성공으로 예측</text>
-<g font-size="15" fill="#1c2230">
-<text class="n1" x="56" y="326">전체 216편 중 성공 23편</text>
-<text class="n2" x="249.8" y="326">시험 66편 중 성공 라벨 6편</text>
-<text class="n3" x="461.2" y="326">정확도 0.924</text>
-<text class="n4" x="582.4" y="326">성공으로 예측 1편</text>
-</g>
-</svg>
-<div class="wctl">
-<span>라벨 기준</span>
-<button class="wbtn" type="button" data-th="500000">50만 명</button>
-<button class="wbtn on" type="button" data-th="1000000">100만 명</button>
-<button class="wbtn" type="button" data-th="3000000">300만 명</button>
-<label>문턱값 <input type="range" class="thr" min="0.05" max="0.95" step="0.05" value="0.5"></label>
-</div>
-</div>
-    <figcaption>라벨 기준 3종의 학습 결과는 미리 계산해 저장한 값입니다. 교재 3절 예시 코드와 같은 자료·분할·설정을 사용했습니다.</figcaption>
-  </figure>
-
-  <div class="callout warn">
-    <div class="h">⚠️ 발견 — 기준선을 움직이면 모델이 흔들린다</div>
-    <p>성공 기준선을 100만에서 300만으로 바꾸어 다시 학습시키면, 성공 라벨이 붙는 영화의 수가 달라지고 정확도도 함께 달라집니다. 모델의 종류는 같지만 <b>사람이 정한 기준 하나가 결과를 바꾼 것</b>입니다. 라벨 기준도 판단이며, 모델의 성능은 그 판단 위에 있습니다.</p>
-  </div>
-  <figure class="interactive" data-fig="labelcurve">
-    <div class="widget" data-w="labelcurve">
-  <svg viewBox="0 0 720 252" role="img" aria-label="성공 기준 열 지점의 두 모델 정확도 꺾은선과 시험용 성공 라벨 편수 막대. 기준을 올릴수록 정확도는 오르고 성공 라벨은 줄어드는 엇갈림">
-    <g stroke="#e3ddcf" stroke-width="1" stroke-dasharray="4 4">
-      <line x1="84" y1="186" x2="624" y2="186"/>
-      <line x1="84" y1="125" x2="624" y2="125"/>
-      <line x1="84" y1="64" x2="624" y2="64"/>
-    </g>
-    <g font-size="14" text-anchor="end" fill="#6b7385">
-      <text x="68" y="191">0.70</text>
-      <text x="68" y="130">0.85</text>
-      <text x="68" y="69">1.00</text>
-    </g>
-    <line class="sel" x1="384" y1="60" x2="384" y2="226" stroke="#d64545" stroke-width="1.5" stroke-dasharray="5 4"/>
-    <g class="bars"></g>
-    <g class="curves"></g>
-    <g font-size="14" text-anchor="middle" fill="#6b7385">
-      <text x="84" y="246">10만</text>
-      <text x="144" y="246">20만</text>
-      <text x="204" y="246">30만</text>
-      <text x="264" y="246">50만</text>
-      <text x="324" y="246">70만</text>
-      <text x="384" y="246">100만</text>
-      <text x="444" y="246">150만</text>
-      <text x="504" y="246">200만</text>
-      <text x="564" y="246">300만</text>
-      <text x="624" y="246">500만</text>
-    </g>
-    <text class="read" x="56" y="26" text-anchor="start" font-size="15" font-weight="800" fill="#1c2230">기준 100만 명 · 로지스틱 0.924 · 트리 0.939 · <tspan class="readk" fill="#1c2230">시험용 성공 라벨 6편</tspan></text>
-    <g font-size="14" fill="#6b7385">
-      <circle cx="493.5" cy="22" r="4.5" fill="#2b7fd6"/>
-      <text x="503" y="26">로지스틱 회귀</text>
-      <circle cx="600" cy="22" r="4.5" fill="#b07a00"/>
-      <text x="609.5" y="26">의사결정트리</text>
-      <rect x="489" y="38" width="12" height="12" fill="#b9b3a5"/>
-      <text x="507" y="48">시험용 성공 라벨 편수</text>
-    </g>
-    <g class="hits"></g>
-  </svg>
-  <div class="wctl">
-    <button class="wbtn" type="button" data-d="-1">◀ 낮은 기준</button>
-    <button class="wbtn" type="button" data-d="1">높은 기준 ▶</button>
-  </div>
-</div>
-    <figcaption>기준을 올릴수록 정확도는 대체로 오르지만, 20만 명에서는 오히려 내려갑니다. 같은 구간에서 시험용 66편에 남은 성공 라벨은 15편에서 1편으로 줄어듭니다. 회색 막대가 그 편수입니다.</figcaption>
-  </figure>
-
-  <p>이 과정 전체는 교과서 116쪽 탐구활동의 스팸 메일 예측 모델을 만드는 과정과 같은 뼈대입니다. 폼 Ⅲ-01b에서 우리 실습을 그 단계에 맞춰 봅니다. 시간이 남으면 폼 Ⅲ-02e(교과서 142쪽 탐구활동 '데이터로 예측하기')에 내 분류기의 예측 하나를 기록합니다.</p>
-  <details class="glossary">
-    <summary>📖 대응표 펼쳐 보기 — 폼을 먼저 써 본 뒤 확인하세요</summary>
-  <table class="daymap">
-    <thead><tr><th>단계 (교과서 116쪽)</th><th>스팸 예측이라면</th><th>오늘 우리가 한 일</th></tr></thead>
-    <tbody>
-      <tr><td><b>데이터 전처리</b></td><td>스팸을 나타내는 속성 선택 · 훈련/테스트 분리</td><td>관객 수 기준으로 라벨을 만들고, 입력의 수집 시점을 확인함</td></tr>
-      <tr><td><b>모델 학습</b></td><td>예측에 적합한 알고리즘 선택</td><td>로지스틱 회귀와 의사결정트리에 같은 문제를 맡김</td></tr>
-      <tr><td><b>모델 평가</b></td><td>올바르게 예측했는지 지표로 확인</td><td>정확도 확인 — 이 지표로 충분한지는 다음 시간의 질문</td></tr>
-    </tbody>
-  </table>
+  <div class="calc-intro">활동지를 풀 때 아래 계산식을 펼쳐 두세요. 기본 문제는 함께 풀고, 연습 문제는 같은 순서로 계산합니다.</div>
+  <details class="calc-fold" id="calculation-formulas">
+    <summary>계산식 펼치기 · MAE · MSE · R²</summary>
+    <section class="calc-board" aria-label="회귀 평가 계산식">
+      <div class="calc-toolbar"><b>계산식 한눈에 보기</b><button type="button" class="calc-fullscreen">화면 가득 보기</button></div>
+      <p class="calc-error">오차 = 실젯값 − 예측값</p>
+      <div class="calc-equation"><div><strong>MAE</strong><small>평균절대오차</small></div><div class="calc-math"><span>=</span><span class="calc-fraction"><span>|실젯값 − 예측값|의 합</span><span>데이터 개수</span></span></div></div>
+      <div class="calc-equation"><div><strong>MSE</strong><small>평균제곱오차</small></div><div class="calc-math"><span>=</span><span class="calc-fraction"><span>(실젯값 − 예측값)²의 합</span><span>데이터 개수</span></span></div></div>
+      <div class="calc-equation"><div><strong>R²</strong><small>결정계수</small></div><div class="calc-math"><span>= 1 −</span><span class="calc-fraction"><span>(실젯값 − 예측값)²의 합</span><span>(실젯값 − 실젯값 평균)²의 합</span></span></div></div>
+      <p class="calc-note">R²의 분모: <b>실젯값의 평균만 예측했을 때</b>의 제곱오차 합<br>실젯값이 모두 같아 분모가 0이면 이 식으로 계산할 수 없습니다.</p>
+    </section>
   </details>
 
-    <h2>5. 도전 — 모델은 무엇을 보고 맞혔나</h2>
-  <p>학습한 의사결정트리의 특성 중요도를 확인합니다. 이 설정에서는 첫 관측일 스크린 수가 0.476, 상영 횟수가 0.277입니다. 나머지 중요도는 판타지·드라마 장르에 배분되었습니다. 각 값은 이 트리 안에서 상대적인 기여를 나타냅니다.</p>
-  <div class="codewrap improve"><span class="label">도전 프롬프트</span><button class="copy-btn">복사</button><pre>의사결정트리에서 어떤 입력이 분류에 기여했는지 확인하고 싶어.
-- 의사결정트리의 특성 중요도를 큰 순서로 표로 보여 줘. 0인 것은 빼 줘.</pre></div>
-  <details class="sample"><summary>선생님이 실행해 확인한 예시 코드</summary><p class="mini">앞 코드 끝에 이어 붙입니다</p><div class="codewrap code"><span class="label">main.py에 이어 붙일 부분</span><pre># 도전 — 모델은 무엇을 보고 맞혔나 (앞 코드 끝에 이어 붙일 부분)
-st.subheader("도전 — 모델은 무엇을 보고 맞혔나")
-중요도 = pd.Series(tree.feature_importances_, index=X.columns)
-중요도 = 중요도[중요도 &gt; 0].sort_values(ascending=False).round(3).reset_index()
-중요도.columns = ["변수", "중요도"]
-st.dataframe(중요도, hide_index=True)
-st.caption("중요도는 이 모델이 무엇을 단서로 삼았는지를 보여 줄 뿐, 그것이 원인이라는 뜻은 아닙니다.")</pre></div></details>
+  <h2>2. 활동지 함께 풀기 — 기본 문제와 연습 문제</h2>
+  <p>기본 문제는 선생님과 한 단계씩 풀고, 연습 문제는 먼저 혼자 계산한 뒤 함께 확인합니다. 학생은 활동지에 계산 과정을 적고, 선생님은 아래 화면에서 <b>계산한 단계만 공개</b>합니다.</p>
+  <p class="mini">활동지 속 DGV는 이 수업의 가상 영화사입니다. 두 모델은 같은 다섯 행으로 비교하며, 수치는 손계산 연습용입니다.</p>
+  <figure class="interactive" data-fig="handcheck">
+    <div class="widget calc-board lesson08-workspace" data-w="handcheck">
+  <div class="calc-toolbar"><b>활동지와 함께 보는 풀이 화면</b><button type="button" class="calc-fullscreen">화면 가득 보기</button></div>
+  <div class="wctl lesson08-controls">
+    <button class="wbtn on" type="button" data-act="p-0">기본 문제 · 함께 풀기</button>
+    <button class="wbtn" type="button" data-act="p-1">연습 문제 · 먼저 풀고 확인</button>
+    <button class="wbtn on" type="button" data-act="m-0">모델 A</button>
+    <button class="wbtn" type="button" data-act="m-1">모델 B</button>
+    <button class="wbtn" type="button" data-act="next">다음 단계 →</button>
+    <button class="wbtn" type="button" data-act="reset">처음부터</button>
+    <span class="wout" data-t="out" aria-live="polite">단계 0 · 실젯값과 두 모델의 예측값</span>
+  </div>
+  <div class="lesson08-situation">
+    <h3 data-t="problem-title">기본 문제 · 상영관을 몇 개 잡을까</h3>
+    <p data-t="situation"></p>
+    <p class="mini" data-t="unit"></p>
+  </div>
+  <p class="lesson08-action" data-t="action" aria-live="polite"></p>
+  <svg viewBox="0 0 720 710" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="활동지 기본 문제의 실젯값 다섯 개를 점으로 찍고 두 모델의 예측을 두 선으로 그린 그림, 그리고 오차·절댓값·제곱·합·MAE와 MSE·평균값 기준의 제곱오차 합·결정계수를 한 단계씩 채워 보이는 표">
+    <text data-t="title" x="30" y="22" font-size="13.5" font-weight="800" fill="#2b2d3a">기본 문제 · 다음 주 관객 수 예측</text>
+    <g data-dyn="cht"></g>
+    <g data-dyn="tbl"></g>
+    <g data-dyn="pan"></g>
+    <text x="30" y="694" font-size="11" fill="#7a7f95">계산이 떨어지도록 고른 값입니다. 실제 측정값이 아닙니다.</text>
+  </svg>
+
+</div>
+    <figcaption>학생은 활동지에 먼저 계산하고, 선생님은 다음 버튼으로 해당 단계만 공개합니다. MAE·MSE를 확인한 뒤 지표와 모델을 고릅니다. 이어서 실젯값 합 → 평균 → 평균과의 차이 제곱·합 → 선택한 모델의 R² 계산식 → 정답 순서로 확인합니다. 문제를 전환하면 풀이가 처음으로 돌아갑니다.</figcaption>
+  </figure>
+
+
+  <h2>3. 계산 결과 해석하기</h2>
+  <p>R²와 MAE가 각각 무엇을 나타내는 값인지는 7차시 5절에서 읽었습니다. 오늘은 두 지표에 MSE를 더해, 세 값이 어떤 계산을 거쳐 나오는지를 봅니다. 활동지에서 계산한 값이 무엇을 나타내는지 정리합니다.</p>
+  <div class="tbquote">
+    <div class="h">📖 교과서의 정의 <span class="src">『데이터 과학』 120쪽</span></div>
+    <p class="q">"실젯값과 예측값의 차이를 오차라고 하는데, 두 직선을 비교하여 오차가 더 작은 것을 선택해야 한다." <span class="src">(120쪽)</span></p>
+    <p class="t">→ MAE는 절대오차를 평균해 빗나감의 크기를 원래 단위로 나타냅니다. MSE는 제곱오차를 평균해 큰 오차를 더 크게 반영합니다. R²는 모델의 제곱오차 합을 평균값 기준의 제곱오차 합과 비교합니다.</p>
+  </div>
   <table class="daymap">
-    <thead><tr><th>변수</th><th>중요도 (트리, 깊이 3)</th></tr></thead>
+    <thead><tr><th>계산</th><th>구하는 법</th><th>묻는 말</th></tr></thead>
     <tbody>
-      <tr><td><b>첫 관측일 스크린 수</b></td><td><b>0.476</b></td></tr>
-      <tr><td>첫 관측일 상영 횟수</td><td>0.277</td></tr>
-      <tr><td>장르 · 판타지</td><td>0.131</td></tr>
-      <tr><td>장르 · 드라마</td><td>0.116</td></tr>
+      <tr><td><b>오차</b></td><td>실젯값 − 예측값</td><td>이 예측은 얼마나, 어느 쪽으로 빗나갔나?</td></tr>
+      <tr><td><b>절대오차 / 제곱오차</b></td><td>오차의 절댓값 / 오차의 제곱</td><td>부호가 상쇄되지 않도록 크기를 나타내면?</td></tr>
+      <tr><td><b>MAE</b></td><td>절대오차의 평균</td><td>원래 단위로 평균적으로 얼마나 빗나갔나?</td></tr>
+      <tr><td><b>MSE</b></td><td>제곱오차의 평균</td><td>큰 오차에 더 큰 비중을 주어 평가하려면?</td></tr>
+      <tr><td><b>R²</b></td><td>1 − (내 모델의 제곱오차 합 ÷ 평균 모델의 제곱오차 합)</td><td>평균만 예측하는 경우보다 제곱오차가 줄었나, 늘었나?</td></tr>
     </tbody>
   </table>
-  <div class="callout warn">
-    <div class="h">⚠️ 영향력은 원인이 아니다</div>
-    <p>특성 중요도는 현재 자료·모델·설정에 따른 값입니다. 관련된 변수가 함께 있거나 학습 자료가 바뀌면 중요도의 분배도 달라질 수 있습니다. 스크린을 많이 확보해서 관객이 늘었는지, 흥행을 기대해서 스크린을 많이 배정했는지는 이 값만으로 구분할 수 없습니다. <b>특성 중요도는 인과관계의 증거가 아닙니다.</b></p>
+  <div class="callout theory">
+    <div class="h">🧮 오차 — 부호를 남길 때와 없앨 때</div>
+    <p>오차는 실젯값에서 예측값을 뺀 값입니다. 부호를 그대로 두면 실제보다 크게 예측한 경우와 작게 예측한 경우의 오차가 서로 상쇄됩니다. 크기를 나타내려면 절댓값이나 제곱으로 부호를 없애야 합니다.</p>
+    <p class="t">활동지에서 확인할 것 — ① 오차의 합과 ② 절댓값의 합을 나란히 적고, 두 값이 어떻게 다른지 봅니다. <span class="src">(교과서 120쪽)</span></p>
+  </div>
+  <details class="glossary">
+    <summary>🔬 그림으로 살펴보기 — 오차와 제곱</summary>
+    <div class="gin">
+  <div style="overflow-x:auto;margin:18px 0">
+    <svg viewBox="0 0 680 310" style="min-width:560px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="점과 회귀 직선 사이의 세로 거리가 오차이고, 오른쪽에서 절대오차에서 MAE로 가는 갈래와 제곱오차에서 MSE로 가는 갈래, 제곱오차 합을 평균값 기준과 비교해 결정계수를 구하는 흐름을 나타낸 그림">
+      <defs>
+        <marker id="arStep9" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e8930c"/></marker>
+      </defs>
+      <!-- 좌측: 좌표평면 -->
+      <line x1="36" y1="20" x2="36" y2="260" stroke="#f0e2bc" stroke-width="2"/>
+      <line x1="36" y1="260" x2="400" y2="260" stroke="#f0e2bc" stroke-width="2"/>
+      <!-- 골드 회귀선: y = 230 − 0.5(x − 50) -->
+      <line x1="50" y1="230" x2="390" y2="60" stroke="#f4b400" stroke-width="3"/>
+      <!-- 점 1: 직선 위쪽 — 짧은 오차와 작은 정사각형 -->
+      <rect x="110" y="180" width="20" height="20" fill="#e45756" opacity="0.18" stroke="#e45756" stroke-width="1"/>
+      <line x1="110" y1="180" x2="110" y2="200" stroke="#e45756" stroke-width="2.5"/>
+      <circle cx="110" cy="180" r="5" fill="#9a9a9a"/>
+      <!-- 점 2: 직선 아래쪽 — 오차 라벨 -->
+      <line x1="200" y1="155" x2="200" y2="190" stroke="#e45756" stroke-width="2.5"/>
+      <circle cx="200" cy="190" r="5" fill="#9a9a9a"/>
+      <text x="210" y="176" font-size="12" font-weight="800" fill="#e45756">오차 = 실젯값 − 예측값</text>
+      <!-- 점 3: 직선에서 먼 점 — 큰 정사각형 -->
+      <rect x="310" y="100" width="90" height="90" fill="#e45756" opacity="0.18" stroke="#e45756" stroke-width="1"/>
+      <line x1="310" y1="100" x2="310" y2="190" stroke="#e45756" stroke-width="2.5"/>
+      <circle cx="310" cy="190" r="5" fill="#9a9a9a"/>
+      <text x="355" y="212" text-anchor="middle" font-size="11.5" font-weight="800" fill="#e45756">제곱오차 — 큰 오차일수록 훨씬 커진다</text>
+      <!-- 우측: 네 단계 -->
+      <rect x="440" y="36" width="220" height="36" rx="9" fill="#fffdf6" stroke="#f0e2bc"/>
+      <text x="550" y="59" text-anchor="middle" font-size="12.5" font-weight="800" fill="#2b2d3a">오차 — 부호 있는 거리</text>
+      <line x1="550" y1="72" x2="495" y2="90" stroke="#e8930c" stroke-width="2" marker-end="url(#arStep9)"/>
+      <line x1="550" y1="72" x2="605" y2="90" stroke="#e8930c" stroke-width="2" marker-end="url(#arStep9)"/>
+      <rect x="440" y="96" width="110" height="36" rx="9" fill="#fffdf6" stroke="#f0e2bc"/>
+      <text x="495" y="113" text-anchor="middle" font-size="10.5" font-weight="800" fill="#2b2d3a">절대오차</text>
+      <text x="495" y="126" text-anchor="middle" font-size="10.5" fill="#2b2d3a">→ MAE</text>
+      <rect x="550" y="96" width="110" height="36" rx="9" fill="#fffdf6" stroke="#f0e2bc"/>
+      <text x="605" y="113" text-anchor="middle" font-size="10.5" font-weight="800" fill="#2b2d3a">제곱오차</text>
+      <text x="605" y="126" text-anchor="middle" font-size="10.5" fill="#2b2d3a">→ MSE</text>
+      <line x1="605" y1="132" x2="605" y2="150" stroke="#e8930c" stroke-width="2" marker-end="url(#arStep9)"/>
+      <rect x="550" y="156" width="110" height="36" rx="9" fill="#fffdf6" stroke="#f0e2bc"/>
+      <text x="605" y="173" text-anchor="middle" font-size="10.5" font-weight="800" fill="#2b2d3a">제곱오차 합</text>
+      <text x="605" y="186" text-anchor="middle" font-size="10.5" fill="#2b2d3a">+ 평균값 기준</text>
+      <line x1="605" y1="192" x2="605" y2="210" stroke="#e8930c" stroke-width="2" marker-end="url(#arStep9)"/>
+      <rect x="550" y="216" width="110" height="36" rx="9" fill="#fdeeba" stroke="#f4b400"/>
+      <text x="605" y="239" text-anchor="middle" font-size="11" font-weight="800" fill="#5a4300">R²</text>
+      <!-- 캡션 -->
+      <text x="340" y="296" text-anchor="middle" font-size="12.5" fill="#7a7f95">오늘 활동지의 계산 순서 — 왼쪽 그림의 세로 거리 하나에서 시작합니다.</text>
+    </svg>
+  </div>
+    </div>
+  </details>
+  <p>양수와 음수인 오차를 그대로 더하면 서로 상쇄될 수 있습니다. 절댓값과 제곱을 사용하면 어떤 차이가 생기는지 활동지에서 계산합니다.</p>
+
+  <h3>손으로 구한 R² 읽기</h3>
+  <p>활동지 기본 문제에서 평균값 기준의 제곱오차 합은 40, 고른 모델의 제곱오차 합은 10이었습니다. R² = 1 − (10 ÷ 40) = 0.75입니다. 평균값 기준보다 제곱오차 합이 75% 작다는 뜻이며, <b>예측의 75%가 정답이라는 뜻이 아닙니다.</b></p>
+  <div class="tbquote">
+    <div class="h">📖 교과서의 정의 <span class="src">『데이터 과학』 131쪽</span></div>
+    <p class="q">"결정 계수(R² score: R-squared score)는 회귀 모델이 실제 데이터와 얼마나 유사하게 예측하고 구체적으로 설명하는지를 나타낸다. 실제 데이터가 평균값 근처에 집중되지 않을수록, 또한 실젯값과 예측값의 차이가 작을수록, 결정 계수는 1에 가까워진다." <span class="src">(131쪽)</span></p>
+    <p class="q">"결정 계수 = 1 − (실젯값 − 예측값)²의 합 ÷ (실젯값 − 실젯값 평균)²의 합" <span class="src">(131쪽 공식)</span></p>
+    <p class="t">→ 활동지 ⑦단계에서 계산한 식이 이 공식입니다. 분자는 내 모델의 제곱오차 합이고, 분모는 평균만 예측했을 때의 제곱오차 합입니다.</p>
   </div>
 
-  <details class="glossary"><summary>더 알아보기 — 실제 사례 · 타이타닉 생존 트리와 질문의 순서</summary><div class="gin">
-  <h3>타이타닉 생존 트리와 질문의 순서</h3>
-  <p>1912년 4월 15일 침몰한 타이타닉호에는 2,200명이 넘게 타고 있었고 생존자는 약 710명입니다. 승객 기록의 성별, 나이, 동승한 형제자매와 배우자 수로 의사결정트리를 학습시키면 모델은 성별을 가장 먼저 묻습니다. 그림의 낱말은 모두 영문이며 아래 표에서 우리말로 대조합니다.</p>
-  <table class="daymap">
-    <thead><tr><th>질문 순서</th><th>그림의 영문 낱말</th><th>읽어 낸 값</th></tr></thead>
-    <tbody>
-      <tr><td><b>첫 질문</b></td><td>성별(gender)</td><td>여성 승객의 생존 확률 0.73, 전체의 36%</td></tr>
-      <tr><td><b>두 번째 질문</b></td><td>나이 9.5세(age)</td><td>그보다 나이가 많은 남성 승객은 전체의 61%, 생존 확률 0.17</td></tr>
-      <tr><td><b>세 번째 질문</b></td><td>동승한 형제자매·배우자 수 3명(sibsp)</td><td>각 끝마디는 전체의 2%, 생존 확률 0.02와 0.89</td></tr>
-    </tbody>
-  </table>
-  <figure class="case" style="margin:14px 0 6px">
-    <img src="img/lesson09_case2.jpg" alt="타이타닉 승객의 생존을 예측하는 의사결정트리. 맨 위 마디는 성별, 그 아래는 나이 9.5세, 그 아래는 동승한 형제자매·배우자 수 3명으로 갈라지며 끝마디마다 생존 확률과 해당 마디의 비율이 적혀 있다" style="width:100%;height:auto">
-    <figcaption style="margin-top:6px;font-size:.84rem;color:var(--text-soft)">그림은 위키백과 'Decision tree learning'의 타이타닉 생존 트리(Gilgoldm, 2020, CC BY-SA 4.0) · 끝마디의 두 숫자는 생존 확률과 해당 마디의 비율</figcaption>
-  </figure>
-  <p>트리가 성별을 첫 질문으로 고른 것은 구조 순서가 자료에 남아 있기 때문이며 성별이 생존의 원인임을 밝힌 결과가 아닙니다. 특성 중요도와 인과를 구분하는 5절의 논점과 이어집니다.</p>
-  <p class="mini">출처: <a href="https://en.wikipedia.org/wiki/Decision_tree_learning" target="_blank" rel="noopener">위키백과 · Decision tree learning</a></p>
+<h3 id="sec4">평가 점수의 의미와 한계</h3>
+  <p>활동지에서 오차의 부호가 상쇄되는 것을 확인하고, 절대오차와 제곱오차를 손으로 계산했습니다. MAE는 오차의 크기를 비례해 반영하고, MSE는 오차를 제곱해 큰 오차의 영향을 더 키웁니다. R²는 제곱오차 합을 평균값 기준과 비교합니다. 실제 손해가 오차의 크기에 따라 어떻게 커지는지에 맞춰 지표를 정합니다. 실제보다 적게 예측한 경우와 많이 예측한 경우의 손해가 다르면 오차의 부호도 함께 확인합니다.</p>
+  <p>다음 시간에는 정답표 없이 시작합니다. 7·8차시에서 사용한 같은 영화 데이터를 이번에는 비슷한 것끼리 묶어, 지난 영화들이 몇 가지 유형으로 나뉘는지 살펴봅니다.</p>
+
+  <details class="glossary"><summary>더 알아보기 — 실제 사례</summary><div class="gin">
+  <h3>실제로 쓰이는 평가 지표</h3>
+  <p>오늘 수업에서 손으로 계산한 MAE, MSE, 결정계수는 단순한 연습 문제가 아닙니다. 산업과 공공 기관이 실제로 사용하는 평가 기준입니다. 태풍 진로 예보 사례로 같은 계산이 어떤 판단에 사용되는지 확인합니다.</p>
+  <p>미국 국립허리케인센터(NHC)는 1970년부터 해마다 예보한 태풍 위치와 실제 위치 사이의 거리를 모두 평균해 <a href="https://www.nhc.noaa.gov/verification/verify5.shtml" target="_blank" rel="noopener">진로 예보 오차</a>를 공개합니다. 부호 없는 거리를 평균하므로 이 값은 오늘 계산한 평균절대오차(MAE)와 계산 방식이 같습니다. 2024년 대서양 지역 48시간 예보의 평균 오차는 45.4해리(약 84킬로미터)로, 12시간부터 120시간까지 모든 구간에서 역대 최소 기록이었습니다. 1970년대에는 같은 48시간 오차가 200해리를 넘는 해가 대부분이었습니다.</p>
+  <p>아래 그래프의 점 하나는 그해에 발표한 모든 예보의 오차를 평균한 값입니다. 활동지에서 표 한 장의 절대오차를 평균해 MAE를 구한 과정을, 한 해 수백 건의 예보에 대해 55년 동안 반복한 결과가 이 그림입니다. 세로축 단위가 해리이므로 값을 원래 단위로 그대로 읽을 수 있다는 MAE의 성질도 확인됩니다. 계열마다 추세선이 따로 그려져 있어, 예보 시간이 길수록 오차가 커진다는 점과 각 계열이 해마다 크게 흔들린다는 점을 함께 볼 수 있습니다.</p>
+  <figure class="case"><img src="img/lesson08_case2.jpg" alt="미국 국립허리케인센터의 대서양 진로 예보 연평균 오차 그래프. 가로축은 1970년부터 2025년까지의 연도, 세로축은 해리 단위 오차이며 24·48·72·96·120시간 예보가 각각 다른 색 선으로 그려져 있고 계열마다 아래로 내려가는 추세선이 겹쳐져 있습니다." loading="lazy" style="width:100%;height:auto"><figcaption class="src">출처: 미국 국립허리케인센터(NHC/NOAA) 예보 검증 데이터 · 대서양 진로 예보 연평균 오차 1970–2025 · 세로축 단위 해리 · nhc.noaa.gov</figcaption></figure>
+  <p>45.4해리라는 값도 그 자체로는 좋고 나쁨을 말하지 않습니다. 1970년대의 200해리와 나란히 놓았을 때 개선의 크기가 드러납니다. 지표의 값 하나만으로는 판단을 마칠 수 없으며, 그 값이 어떤 데이터에서 어떤 기준과 비교해 나온 것인지를 함께 확인해야 합니다.</p>
   </div></details>
 
-<h2>6. 개념 정리 — 질문이 모델을 고른다</h2>
-  <p>회귀와 분류는 모두 정답 값을 이용하는 지도학습입니다. 회귀는 수치, 분류는 범주를 예측합니다. 오늘은 관객 수에 기준을 적용해 분류용 라벨을 만들었습니다. 다른 분류 과제에서는 이미 기록된 범주를 사용할 수도 있습니다. 라벨의 의미와 만드는 기준을 먼저 확인해야 결과를 해석할 수 있습니다.</p>
-  <div class="callout warn">
-    <div class="h">⚠️ 이 숫자, 믿어도 되나?</div>
-    <p>같은 시험용 66편에서 로지스틱 회귀의 정확도는 0.924, 의사결정트리는 0.939였습니다. 이 값만으로 충분히 좋은 모델이라고 말할 수 있을까요? 다음 시간에는 항상 다수 범주로 예측하는 기준 모델과 비교하고, 성공작을 얼마나 찾아냈는지도 계산합니다.</p>
-  </div>
+  <h2>4. 실험실 — 직선 대신 곡선을 쓰면</h2>
+  <p>직선 대신 곡선을 쓰면 훈련용 데이터의 점수는 올라가지만 테스트용 데이터의 점수는 오히려 내려갈 수 있습니다. 1차·3차·9차 모델의 오차를 한 표에 나란히 적으면 그 차이가 숫자로 드러납니다. 본문 5절까지 마친 뒤 시간이 남으면 아래 실험실에서 이어서 합니다.</p>
+  <p class="mini"><a href="lesson08-lab.html">🧪 8차시 실험실 · 직선 대신 곡선을 쓰면 →</a></p>
 
-  <h2>7. 확인 문제</h2>
+  <h2>5. 확인 문제</h2>
   <div class="quiz">
-    <div class="qq"><span class="qn">문제 1</span> 다음 물음이 회귀 문제인지 분류 문제인지 골라 보세요. 답을 눌러 확인합니다.</div>
+    <div class="qq"><span class="qn">문제 1</span> 어느 예측기의 3일간 오차가 +3, −3, 0이었습니다. 두 소문항에 답해 보세요.</div>
     <div class="qitem">
-      <div class="qs">(가) 이 영화의 총 관객 수는 몇 명이 될까</div>
-      <div class="qopts"><button class="opt" data-ok="1">회귀</button><button class="opt">이진 분류</button><button class="opt">다중 분류</button></div>
-      <div class="fb">연속적인 숫자를 예측한다 — <b>회귀</b>입니다.</div>
+      <div class="qs">(가) 오차를 그냥 더해 "합계 0이니 완벽한 예측기"라고 주장한다면, 이 주장의 문제는?</div>
+      <div class="qopts qopts-col">
+        <button class="opt">문제없다 — 오차의 합이 0이면 정의상 완벽한 예측이다</button>
+        <button class="opt" data-ok="1">양수 오차와 음수 오차가 상쇄되었을 뿐, 3일 중 2일을 3씩 빗나갔다 — 부호를 없애야 크기를 공정하게 계산한다</button>
+        <button class="opt">3일은 표본이 너무 적어서 어떤 판단도 할 수 없다</button>
+      </div>
+      <div class="fb">+3과 −3이 상쇄되어 합이 0일 뿐입니다. "완벽하다"는 주장은 상쇄를 놓친 판단으로, +3과 −3은 둘 다 3만큼의 빗나감입니다. 표본 수의 문제도 아닙니다. 표본이 아무리 많아도 부호 있는 오차를 그대로 더하는 방식 자체가 잘못입니다.</div>
     </div>
     <div class="qitem">
-      <div class="qs">(나) 이 영화의 기록된 관객 수는 100만 명 이상일까</div>
-      <div class="qopts"><button class="opt">회귀</button><button class="opt" data-ok="1">이진 분류</button><button class="opt">다중 분류</button></div>
-      <div class="fb">"100만 명 이상/미만" 두 범주 중 하나 — <b>이진 분류</b>입니다. 같은 영화 데이터라도 묻는 형태가 모델을 정합니다.</div>
-    </div>
-    <div class="qitem">
-      <div class="qs">(다) 이 메일은 스팸인가</div>
-      <div class="qopts"><button class="opt">회귀</button><button class="opt" data-ok="1">이진 분류</button><button class="opt">다중 분류</button></div>
-      <div class="fb">"스팸이다/아니다" 두 범주 — <b>이진 분류</b>입니다. 다중 분류는 교과서 135쪽의 책 장르처럼 범주가 셋 이상일 때입니다.</div>
+      <div class="qs">(나) 이 예측기의 MSE는?</div>
+      <div class="qopts">
+        <button class="opt">0</button>
+        <button class="opt" data-ok="1">6</button>
+        <button class="opt">18</button>
+      </div>
+      <div class="fb">제곱오차는 9, 9, 0이고 MSE는 그 평균 = 18 ÷ 3 = <b>6</b>입니다. 오차 합이 0이어도 제곱오차는 0이 아니므로 0은 답이 될 수 없습니다. 18은 제곱오차의 합이며, MSE는 평균이므로 3으로 나눠야 합니다.</div>
     </div>
   </div>
   <div class="quiz">
-    <div class="qq"><span class="qn">문제 2</span> 흥행 성공 기준선을 100만 명에서 300만 명으로 올리면 무엇이 달라지는지 두 가지 이상 쓰시오. 자기 말로 답해 본 뒤 펼쳐 보세요.</div>
-    <details class="reveal"><summary>예시 답 펼쳐 보기</summary>
-      <p>① 성공 라벨이 붙는 영화 수가 줄어든다(정답 자체가 바뀐다). ② 모델이 새 라벨로 다시 학습되므로 예측 결과와 정확도가 달라진다. 즉 라벨 기준은 데이터에 원래 있던 사실이 아니라 사람의 판단이며, 그 판단이 모델의 성능 수치까지 바꾼다.</p>
-    </details>
-  </div>
-  <div class="quiz">
-    <div class="qq"><span class="qn">문제 3</span> 로지스틱 회귀는 이름에 "회귀"가 들어 있는데 왜 분류 모델인가? 자기 말로 답해 본 뒤 펼쳐 보세요.</div>
-    <details class="reveal"><summary>예시 답 펼쳐 보기</summary>
-      <p>입력 변수의 가중합에 시그모이드를 적용해 양성일 확률을 추정하고, 문턱값으로 범주를 정하기 때문입니다. 이 실습에서는 확률이 0.5 이상이면 성공, 미만이면 기준 미달로 분류합니다. 선형 회귀를 먼저 학습하는 절차는 아닙니다.</p>
-    </details>
-  </div>
-  <div class="quiz">
-    <div class="qq"><span class="qn">문제 4</span> 특성 중요도에서 첫 관측일 스크린 수가 0.476으로 1위였습니다. 이 결과에서 끌어낼 수 있는 말로 알맞은 것은?</div>
+    <div class="qq"><span class="qn">문제 2</span> 어느 데이터에서 평균만 예측하는 경우의 제곱오차 합이 40, 내 회귀 직선의 제곱오차 합이 10입니다.</div>
     <div class="qitem">
-      <div class="qopts qopts-col"><button class="opt">스크린을 많이 확보하면 흥행에 성공한다 — 원인이 밝혀졌다</button><button class="opt" data-ok="1">이 모델은 스크린수를 가장 큰 단서로 삼았다 — 원인인지는 이 숫자로 알 수 없다</button><button class="opt">스크린수가 1위이므로 장르는 흥행과 무관하다</button></div>
-      <div class="fb">중요도는 '무엇을 단서로 삼았나'를 보여 줄 뿐 원인의 증거가 아닙니다. 기대작에 스크린을 몰아주는 결정이 먼저였을 수도 있습니다. 중요도는 자료와 모델 설정에 따라 달라질 수 있습니다.</div>
+      <div class="qs">(가) 활동지 기본 문제와 같은 수입니다. R²는?</div>
+      <div class="qopts">
+        <button class="opt">0.25</button>
+        <button class="opt" data-ok="1">0.75</button>
+        <button class="opt">4.0</button>
+      </div>
+      <div class="fb">R² = 1 − (10 ÷ 40) = <b>0.75</b>. 평균값 기준보다 제곱오차 합이 75% 작다는 뜻입니다. 0.25는 10÷40까지만 계산하고 1에서 빼는 단계를 빠뜨린 값이며, 남아 있는 오차의 비율에 해당합니다. 4.0은 분자와 분모를 뒤집은 40÷10입니다. R²의 분모는 평균값 기준의 제곱오차 합입니다.</div>
+    </div>
+    <div class="qitem">
+      <div class="qs">(나) 내 직선의 제곱오차 합이 60이라면?</div>
+      <div class="qopts qopts-col">
+        <button class="opt">0 — R²는 음수가 될 수 없으므로 0에서 멈춘다</button>
+        <button class="opt">0.5</button>
+        <button class="opt" data-ok="1">−0.5 — 평균만 예측하는 경우보다도 못하다</button>
+      </div>
+      <div class="fb">R² = 1 − (60 ÷ 40) = <b>−0.5</b>. R²는 음수가 될 수 있습니다. 0.5는 부호 처리를 놓친 값으로, 60÷40 = 1.5이므로 1 − 1.5 = −0.5입니다.</div>
+    </div>
+  </div>
+  <div class="quiz">
+    <div class="qq"><span class="qn">문제 3</span> 문제 1의 예측기는 하루 관객 수를 만 명 단위로 예측했고, 3일간의 오차는 +3, −3, 0이었습니다. 두 소문항에 답해 보세요.</div>
+    <div class="qitem">
+      <div class="qs">(가) 이 예측기의 MAE는?</div>
+      <div class="qopts">
+        <button class="opt">0</button>
+        <button class="opt" data-ok="1">2</button>
+        <button class="opt">6</button>
+      </div>
+      <div class="fb">절대오차는 3, 3, 0이고 MAE는 그 평균 = 6 ÷ 3 = <b>2</b>입니다. 0은 부호를 그대로 둔 채 더한 값이며, 6은 절대오차의 합입니다. 문제 1에서 구한 MSE도 6이지만 두 값은 계산 과정이 다릅니다.</div>
+    </div>
+    <div class="qitem">
+      <div class="qs">(나) MAE 2와 MSE 6의 단위는 어떻게 다릅니까?</div>
+      <div class="qopts qopts-col">
+        <button class="opt">둘 다 만 명입니다. 같은 오차에서 나온 값이기 때문입니다.</button>
+        <button class="opt" data-ok="1">MAE는 만 명이고, MSE는 만 명의 제곱입니다.</button>
+        <button class="opt">MAE는 만 명의 제곱이고, MSE는 만 명입니다.</button>
+      </div>
+      <div class="fb">MAE는 절대오차를 평균한 값이므로 실젯값과 같은 단위인 <b>만 명</b>으로 읽습니다. MSE는 오차를 제곱해 평균한 값이므로 단위도 제곱되어 <b>만 명의 제곱</b>이 됩니다. 단위가 다르므로 2와 6의 크기를 나란히 놓고 비교할 수 없습니다. 두 지표는 각각 같은 지표끼리 모델을 비교할 때 사용합니다.</div>
     </div>
   </div>
 
   <h2>🎒 오늘의 체크</h2>
   <ul class="checklist">
-    <li>회귀와 분류는 묻는 말과 답의 형태로 구분할 수 있다.</li>
-    <li>우리 반이 정한 흥행 성공 기준선과 그 이유를 말할 수 있다.</li>
-    <li>내 분류기가 산출한 성공 확률과 정확도를 확인했다.</li>
-    <li>트리 그림에서 모델이 먼저 던진 질문(변수)을 찾아 읽었다.</li>
+    <li>오차 → 절대오차 → MAE와 오차 → 제곱오차 → MSE의 두 계산을 손으로 밟고, 제곱오차 합을 평균값 기준과 비교해 R²를 구했습니다.</li>
+    <li>활동지의 기본 문제와 연습 문제를 ①부터 ⑦까지 같은 순서로 계산했습니다.</li>
+    <li>R²가 평균값 기준과 비교한 제곱오차 합의 상대적 변화를 나타내며, 양수·0·음수의 뜻을 계산으로 설명할 수 있습니다.</li>
   </ul>
 
   <h2>📚 오늘의 용어</h2>
   <table class="glossary-table">
     <tr><th>용어</th><th>뜻</th></tr>
-    <tr><td class="term">분류</td><td>정해진 범주 중 하나를 예측하는 문제(이진 분류: 두 범주)</td></tr>
-    <tr><td class="term">레이블(라벨)</td><td>모델이 예측하려는 정답 값. 없으면 사람이 기준을 정해 붙인다.</td></tr>
-    <tr><td class="term">로지스틱 회귀</td><td>입력의 가중합에 시그모이드를 적용해 확률을 추정하고 분류하는 모델</td></tr>
-    <tr><td class="term">시그모이드 함수</td><td>실수 입력을 0과 1 사이 값으로 바꾸는 S자 형태의 함수</td></tr>
-    <tr><td class="term">의사결정트리</td><td>질문을 차례로 던져 가지를 나누며 분류하는 모델. 판단 순서가 그림으로 보인다.</td></tr>
-    <tr><td class="term">문턱값</td><td>확률을 범주로 바꾸는 경계(이 실습: 0.5 이상이면 양성)</td></tr>
-      <tr><td class="term">특성 중요도</td><td>모델이 예측할 때 각 변수를 얼마나 무겁게 썼는지 나타낸 값. 단서의 무게일 뿐 원인의 증거는 아니다.</td></tr>
-</table>
+    <tr><td class="term">오차</td><td>실젯값과 예측값의 차이</td></tr>
+    <tr><td class="term">절대오차</td><td>오차의 절댓값입니다.</td></tr>
+    <tr><td class="term">평균절대오차(MAE)</td><td>절대오차의 평균입니다. 실젯값과 같은 단위를 사용합니다.</td></tr>
+    <tr><td class="term">평균제곱오차(MSE)</td><td>제곱오차의 평균입니다. 큰 오차에 민감하며, 단위도 제곱됩니다.</td></tr>
+    <tr><td class="term">결정계수(R²)</td><td>1 − (내 모델의 제곱오차 합 ÷ 평균 모델의 제곱오차 합). 평균값 기준과 비교한 제곱오차 합의 상대적 변화이며, 양수이면 모델의 제곱오차 합이 기준보다 작고 음수이면 큽니다.</td></tr>
+    <tr><td class="term">기준 모델(평균값 기준)</td><td>평가 대상 실젯값의 평균을 항상 예측하는 모델입니다. 활동지와 위젯의 '평균값 기준'이 이것이며, 12차시에서는 다수 범주만 예측하는 기준 모델과 비교합니다.</td></tr>
+  </table>
   <p class="glossary-more"><a href="glossary.html">📚 전체 용어사전 보기 →</a></p>
 
   <div class="pager">
-    <a class="prev" href="lesson08.html"><div class="dir">← 이전</div><div class="tt">8차시 · 회귀 평가 손계산</div></a>
-    <a class="next" href="lesson10.html"><div class="dir">다음 →</div><div class="tt">10차시 · 분류 평가 손계산</div></a>
+    <a class="prev" href="lesson07.html"><div class="dir">← 이전</div><div class="tt">7차시 · 다중 선형회귀</div></a>
+    <a class="next" href="lesson09.html"><div class="dir">다음 →</div><div class="tt">9차시 · 군집</div></a>
   </div>
 </main>
 </div>
+
 <footer class="foot">도농고등학교 · 데이터 과학 · 학생용 교재</footer>
 <script src="assets/copy.js"></script>
 <script src="assets/check.js"></script>
 <script src="assets/quiz.js"></script>
-<script src="assets/widgets09.js"></script>
+<script src="assets/widgets08.js?v=5"></script>
+<script src="assets/answer.js?v=3"></script>
+<script src="assets/lesson08-board.js"></script>
 </body>
 </html>
