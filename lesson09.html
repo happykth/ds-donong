@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>9차시 · 분류 — 로지스틱 회귀와 의사결정트리 · 데이터 과학 도농고</title>
-<link rel="stylesheet" href="assets/style.css?v=tb5">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧭</text></svg>">
-<script src="assets/release.js"></script>
-<script src="assets/gate.js"></script>
+<title>11차시 · 분류 — 뇌졸중을 예측할 수 있을까 · 데이터 과학 당곡고</title>
+<link rel="stylesheet" href="assets/style.css?v=tb16">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏥</text></svg>">
+<style>main { overflow-wrap: anywhere; } .daymap { display: block; max-width: 100%; overflow-x: auto; }</style>
+<link rel="stylesheet" href="assets/review.css">
 </head>
 <body>
 <div class="topbar"><div class="inner">
-  <a class="brand" href="index.html"><span class="chick">🧭</span> 데이터 과학 <span class="a">도농고</span></a>
+  <a class="brand" href="index.html"><span class="chick">🏥</span> 데이터 과학 <span class="a">당곡고</span></a>
   <span class="spacer"></span>
   <a class="home" href="index.html">← 목차</a>
   <span class="badge">학생용</span>
@@ -19,558 +19,735 @@
 
 <div class="wrap">
 <main>
-  <span class="eyebrow">Ⅲ. 데이터 모델링과 평가 · 9차시</span>
-  <h1>분류 · <span class="a">로지스틱 회귀와 의사결정트리</span></h1>
+  <span class="eyebrow">Ⅲ. 데이터 모델링과 평가 · 11차시</span>
+  <h1>분류 · <span class="a">뇌졸중을 예측할 수 있을까</span></h1>
   <div class="under"></div>
 
   <div class="quote">
-    <div class="q">"문제를 잘 정의하면 절반은 푼 것이다."</div>
-    <span class="by">존 듀이 『논리학』(1938) — 성공의 기준선을 정하는 일부터가 분류 문제의 절반입니다</span>
+    <div class="q">"얼굴이 한쪽으로 처지는가, 팔에 힘이 빠지는가, 말이 어눌해지는가."</div>
+    <span class="by">대한뇌졸중학회 FAST 캠페인</span>
   </div>
-  <p style="text-align:right;font-size:.85rem;margin:-4px 0 14px"><a href="lesson09-deep.html">🔎 더 자세한 판 보기 →</a></p>
 
-  <p class="lead">7차시의 영화 데이터로 이번에는 <b>관객 수가 정한 기준 이상인지</b> 분류합니다. 관객 수를 숫자로 예측하는 회귀와, 기준 충족 여부를 예측하는 분류의 차이를 살펴봅니다. 먼저 학급에서 관객 수 기준을 정하고, 두 모델의 확률과 판단 규칙을 비교합니다.</p>
+  <p class="lead">5,110명의 건강 기록을 바탕으로 <b>뇌졸중을 겪은 사람과 겪지 않은 사람</b>을 구분합니다. 기온이나 관객 수처럼 숫자를 예측하는 것이 아니라, 정해진 두 범주 가운데 하나를 예측하는 문제입니다.</p>
+
+  <div class="callout data">
+    <div class="h">🚑 도입 — 뇌졸중은 드문 병이 아닙니다</div>
+    <p>뇌졸중은 뇌로 가는 혈관이 <b>막히거나 터져서</b> 발생하는 질환입니다. 치료가 늦어지면 심각한 후유증이 남을 수 있습니다.</p>
+    <p>2021년 한 해 동안 새로 발생한 뇌졸중 환자는 <b>10만 8,950명</b>으로, 하루 평균 <b>약 300명</b>꼴입니다. 인구 10만 명당 발생률은 <b>212.2건</b>이며, 이는 2011년보다 <b>9.5% 증가</b>한 수치입니다. 특히 <b>80세 이상</b>에서는 10만 명당 <b>1,508.4건</b>으로 발생률이 크게 높아집니다.</p>
+    <p>판단은 결국 둘 중 하나입니다. <b>뇌졸중인지 아닌지입니다.</b> 이렇게 정해진 범주 가운데 하나를 맞히는 문제를 <b>분류</b>라고 합니다.</p>
+  </div>
+  <p class="mini">출처: 질병관리청 심뇌혈관질환 발생통계(2024-04-29 발표)</p>
 
   <div class="make-banner">
     <div class="t">🎯 오늘 하는 것</div>
     <ul>
-      <li><b>기준 정하기</b> — "흥행 성공"의 관객 수 기준선을 학급이 함께 정한다 (라벨은 사람이 정한다)</li>
-      <li><b>바이브 코딩</b> — 로지스틱 회귀로 성공 확률을, 의사결정트리로 판단 규칙을 만든다</li>
-      <li><b>관찰</b> — 트리 그림에서 모델이 질문을 던지는 순서를 읽는다</li>
+      <li><b>데이터 출처 확인</b> — 게시자와 이용 조건을 확인하고 앱의 데이터 소개 화면에 기록한다</li>
+      <li><b>데이터 탐색</b> — 값의 분포, 뇌졸중 여부에 따른 차이, 비어 있는 값을 살펴본다</li>
+      <li><b>분류 모델 만들기</b> — 두 가지 분류 모델을 학습하고 기준 모델과 정확도를 비교한다</li>
     </ul>
   </div>
 
-  <h2>0. 왜 배우나</h2>
-  <p>스팸 메일 필터, 감염병 검사의 양성·음성 판정처럼 세상의 많은 예측은 숫자가 아니라 <b>"인가, 아닌가"</b>를 답합니다. 문제를 받았을 때 회귀 문제인지 분류 문제인지 가려내는 눈을 오늘 기릅니다.</p>
+  <h2>0. 오늘의 목표</h2>
+  <p>건강 기록의 네 가지 속성으로 뇌졸중 여부를 예측하는 <b>두 가지 분류 모델</b>을 만듭니다. 학습에 사용하지 않은 데이터를 따로 남겨 두고, 모델이 얼마나 맞히는지 확인합니다.</p>
+  <ul class="steps">
+    <li>맞혀야 할 답의 모양으로 <b>회귀</b>와 <b>분류</b>를 구분할 수 있다.</li>
+    <li>데이터의 게시자·라이선스·사사 표기를 확인하고, 분석 결과를 어디까지 해석할 수 있는지 설명할 수 있다.</li>
+    <li>두 가지 분류 모델을 만들고, 테스트 데이터에서 정확도를 계산해 비교할 수 있다.</li>
+  </ul>
 
-  <h2>1. 개념 이해 — 회귀에서 분류로</h2>
-  <div class="tbquote">
-    <div class="h">📖 교과서의 정의 <span class="src">『데이터 과학』 135·136쪽</span></div>
-    <p class="q">"분류 모델 중 이진 분류는 어떤 특성을 '띤다' 또는 '띠지 않는다' 두 가지 경우의 수 중 하나로 예측하는 것을 말한다." <span class="src">(135쪽)</span></p>
-    <p class="q">"로지스틱 회귀는 선형 회귀 모델을 로지스틱 함수와 결합하여 각 범주에 해당할 확률을 바탕으로 분류하는 방법이다." <span class="src">(135쪽)</span></p>
-    <p class="q">"… 출력값이 0.5보다 크면 양성, 작으면 음성으로 분류한다." <span class="src">(136쪽)</span></p>
-    <p class="t">→ 로지스틱 회귀는 양성일 확률을 추정합니다. 이 실습에서는 <b>0.5 이상이면 양성, 미만이면 음성</b>으로 분류합니다. 관객 수로 정답을 만드는 기준과, 확률로 예측을 정하는 문턱값은 서로 다릅니다.</p>
+  <div class="callout tip">
+    <div class="h">🏥 우리는 DG메디컬 건강검진센터의 데이터 과학 인턴입니다</div>
+    <p>검진센터는 뇌졸중을 겪은 적이 있는 분께 재발을 막는 생활 관리 상담을 안내합니다. 다만 <b>모든 기록에 뇌졸중 병력이 적혀 있지는 않습니다.</b> 예전에 문진표를 받은 5,110명분의 기록에는 뇌졸중 여부가 기재되어 있지만, 올해 새로 들어온 검진 결과에는 해당 항목이 비어 있습니다.</p>
+    <p>센터장은 답이 적힌 5,110명분의 데이터로 모델을 만들어, 답이 없는 기록에서 <b>상담 안내 대상</b>을 가려내려 합니다. 안내 한 통에는 비용이 들고, 상담할 수 있는 인원도 정해져 있어 전원에게 보낼 수는 없습니다.</p>
+    <p>하지만 모델부터 만들지는 않습니다. <b>데이터가 어디서 왔는지</b> 먼저 확인합니다.</p>
   </div>
+
+  <h2>1. 데이터 확인하기</h2>
+  <p>지난 두 시간에는 정답이 정해져 있지 않은 데이터를 다뤘습니다. 이번에는 각 사람의 뇌졸중 여부가 기록된 <b>정답이 있는 데이터</b>를 사용합니다. 실습은 <b>출처 확인 → 데이터 탐색 → 모델 만들기 → 평가</b> 순서로 진행합니다.</p>
+  <p>사용할 데이터는 캐글에 공개된 <b>Stroke Prediction Dataset</b>입니다. 데이터를 불러오기 전에 게시자가 밝힌 출처와 이용 조건부터 확인합니다.</p>
   <table class="daymap">
-    <thead><tr><th>구분</th><th>묻는 말</th><th>답의 형태</th><th>영화 데이터라면</th></tr></thead>
+    <thead><tr><th>확인한 것</th><th>게시자가 적어 둔 내용</th></tr></thead>
     <tbody>
-      <tr><td><b>회귀</b> (6~8차시)</td><td>얼마나?</td><td>연속적인 숫자</td><td>총 관객 수는 몇 명일까</td></tr>
-      <tr><td><b>분류</b> (오늘)</td><td>어느 쪽?</td><td>정해진 범주 중 하나</td><td>흥행에 성공할까, 못 할까</td></tr>
+      <tr><td><b>게시자</b></td><td>fedesoriano · 2021년 1월 26일 공개 · <a href="https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset" target="_blank" rel="noopener">원본 페이지</a></td></tr>
+      <tr><td><b>라이선스</b></td><td><code>Data files © Original Authors</code> — 캐글의 선택지 가운데 제한이 가장 큰 쪽</td></tr>
+      <tr><td><b>사사(출처 표기)</b></td><td><code>(Confidential Source) - Use only for educational purposes</code> — 교육 목적으로만 사용하라는 뜻</td></tr>
+      <tr><td><b>규모</b></td><td>사람 5,110명 × 열 12개</td></tr>
+      <tr><td><b>개인을 알아낼 수 있는가</b></td><td>이름·주소·생년월일이 없습니다. 식별자는 게시자가 붙인 번호뿐입니다</td></tr>
     </tbody>
   </table>
-  <p>범주가 두 개면 이진 분류, 세 개 이상이면 다중 분류입니다. 오늘의 “성공/기준 미달”은 이진 분류입니다. 교과서의 책 장르처럼 여러 범주 중 하나를 고르는 문제는 다중 분류입니다.</p>
-  <p>로지스틱 회귀는 입력 변수의 가중합에 시그모이드 함수를 적용해 양성일 확률을 추정합니다. 선형 회귀를 먼저 학습한 뒤 출력을 바꾸는 방식은 아닙니다. 분류에 맞게 가중치를 학습하고, 추정 확률에 문턱값을 적용해 범주를 정합니다. 의사결정트리도 확률을 추정할 수 있지만, 이 시간에는 <b>조건에 따라 가지가 나뉘는 판단 과정</b>에 주목합니다.</p>
-
-  
-  <figure class="interactive" data-fig="sigmoidPath">
-    <div class="widget" data-w="sigmoidPath">
-<svg viewBox="0 0 720 336" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="시험용 66편의 가중합과 추정 확률을 시그모이드 곡선 위에 나타낸 그림. 문턱값 슬라이더를 옮기면 성공으로 예측하는 편수와 정확도가 바뀜">
-  <!-- 축선: 본판 가로·세로, 확률 띠 세로 -->
-  <g stroke="#e3ddcf" stroke-width="1">
-    <line x1="56" y1="268" x2="556" y2="268"/>
-    <line x1="56" y1="44" x2="56" y2="268"/>
-    <line x1="600" y1="44" x2="600" y2="268"/>
-  </g>
-  <!-- 성공으로 예측 영역(확률 띠) -->
-  <rect class="zone" x="600" y="44" width="92" height="112" fill="#2f9e5f" opacity="0.10"/>
-  <!-- 확률 1 점근선 -->
-  <line x1="56" y1="44" x2="556" y2="44" stroke="#b9b3a5" stroke-width="1" stroke-dasharray="5 4"/>
-  <!-- 축 이름 -->
-  <g font-size="15" fill="#6b7385">
-    <text x="306" y="32" text-anchor="middle">가중합 축 → 시그모이드 곡선</text>
-    <text x="646" y="32" text-anchor="middle">확률 축</text>
-  </g>
-  <!-- 점근선 설명 -->
-  <g font-size="14" fill="#6b7385">
-    <text class="note1" x="156" y="62">확률 1 = 닿지 않는 선</text>
-    <text class="note2" x="156" y="82">σ(5)=0.9933 · σ(10)=0.99995</text>
-  </g>
-  <!-- 가중합 눈금 -->
-  <g font-size="14" fill="#6b7385" text-anchor="middle">
-    <text x="131" y="286">−6</text>
-    <text x="231" y="286">−4</text>
-    <text x="331" y="286">−2</text>
-    <text x="431" y="286">0</text>
-    <text x="531" y="286">2</text>
-  </g>
-  <!-- 확률 눈금 -->
-  <g font-size="14" fill="#6b7385" text-anchor="end">
-    <text x="48" y="273">0</text>
-    <text x="48" y="161">0.5</text>
-    <text x="48" y="49">1</text>
-  </g>
-  <!-- 시그모이드 곡선 -->
-  <polyline class="curve" fill="none" stroke="#6b7385" stroke-width="2.5" points=""/>
-  <!-- 66편: 본판 점 · 띠 착지 점 · 클릭 히트원 -->
-  <g class="mpts"></g>
-  <g class="bpts"></g>
-  <g class="hits"></g>
-  <!-- 문턱선과 라벨 -->
-  <line class="tline" x1="56" y1="156" x2="692" y2="156" stroke="#d64545" stroke-width="2"/>
-  <text class="zlab" x="604" y="60" font-size="14" fill="#2f9e5f">성공으로 예측</text>
-  <text class="tlab" x="60" y="148" font-size="14" fill="#d64545">문턱값 0.50</text>
-  <!-- 수치 줄과 선택 줄 -->
-  <g font-size="15" fill="#1c2230">
-    <text class="n1" x="56" y="304">맞힌 편수 61/66</text>
-    <text class="n2" x="232" y="304">정확도 0.924</text>
-    <text class="n3" x="376" y="304">성공으로 예측 1편</text>
-    <text class="n4" x="536" y="304">기준 미달로 예측 65편</text>
-    <text class="sel" x="56" y="326">점을 눌러 한 편의 확률 확인</text>
-  </g>
-</svg>
-<div class="wctl">
-  <label>문턱값 <input type="range" class="thr" min="0.05" max="0.95" step="0.05" value="0.5"></label>
-  <button class="wbtn" type="button" data-k="path">경로 따라가기</button>
-  <button class="wbtn" type="button" data-k="top">확률이 가장 높은 영화</button>
-  <button class="wbtn" type="button" data-k="miss">확률은 낮고 실제는 성공</button>
-</div>
-</div>
-    <figcaption>그림의 66편은 시험용 자료입니다. 라벨 기준은 100만 명이고, 확률은 4절 표와 같은 모델에서 미리 계산해 저장한 값입니다.</figcaption>
-  </figure>
-
-
-  <details class="glossary"><summary>더 알아보기 — 실제 사례 · 챌린저호 O-링과 로지스틱 회귀</summary><div class="gin">
-  <h3>챌린저호 O-링과 로지스틱 회귀</h3>
-  <p>1986년 1월 28일 미국 항공우주국 우주왕복선 챌린저호가 발사 73초 만에 공중분해되었고 승무원 7명이 사망했습니다. 사고 이전 23회 발사에 발사 당시 기온과 O-링 손상 여부가 기록으로 남아 있었습니다. 손상이 기록된 발사는 23회 중 7회입니다. 1989년 미국통계학회 학술지(JASA)에 실린 달랄 연구진의 분석은 로지스틱 회귀로 화씨 31도의 발사 조건에서 접합부 O-링 파손 확률을 최소 13%로, 화씨 60도로 연기했다면 최소 2%로 계산했습니다.</p>
-  <table class="daymap">
-    <thead><tr><th>항목</th><th>챌린저호 사례</th><th>이 차시 개념과의 연결</th></tr></thead>
-    <tbody>
-      <tr><td><b>무엇을 예측했나</b></td><td>O-링 손상 여부(손상 있음·손상 없음 두 범주)</td><td>오늘의 성공·기준 미달과 같은 이진 분류</td></tr>
-      <tr><td><b>입력</b></td><td>발사 당시 기온(화씨) 하나</td><td>오늘은 스크린 수·상영 횟수·성수기·장르·국가 다섯</td></tr>
-      <tr><td><b>자료의 범위</b></td><td>23회 발사, 손상 기록 7회, 최저 기온 화씨 53도</td><td>발사 예정 기온 화씨 31도는 자료 바깥</td></tr>
-    </tbody>
-  </table>
-  <figure class="case" style="margin:14px 0 6px">
-    <img src="img/lesson09_case1.png" alt="발사 기온과 O-링 손상 여부의 산점도 위에 로지스틱 회귀 곡선을 그린 그래프. 손상 있음 7회는 빨간 점, 손상 없음 16회는 회색 점이며 화씨 53도 아래는 자료가 없는 구간으로 음영 처리되어 있다" style="width:100%;height:auto">
-    <figcaption style="margin-top:6px;font-size:.84rem;color:var(--text-soft)">자료는 사고 이전 23회 발사의 O-링 기록 · 곡선은 이 자료로 수업용 재계산 · 확률 계산은 Dalal 외(1989, JASA)</figcaption>
-  </figure>
-  <p>오늘 만든 로지스틱 회귀와 같은 형태로 입력 하나(기온)에서 확률을 추정하고 문턱값으로 판단을 정합니다. 학습 자료에 화씨 53도보다 낮은 발사가 하나도 없어 자료 바깥 구간의 확률을 그대로 받아들일 수 없다는 한계가 있습니다. 9차시의 기준과 입력을 사람이 정한다는 논점으로 이어집니다.</p>
-  <p class="mini">출처: <a href="https://www.tandfonline.com/doi/abs/10.1080/01621459.1989.10478858" target="_blank" rel="noopener">Dalal, Fowlkes &amp; Hoadley (1989), JASA 84(408)</a></p>
-  </div></details>
-
-  <h2>2. 성공의 기준선 — 라벨은 사람이 정한다</h2>
-  <div class="tbquote">
-    <div class="h">📖 교과서의 정의 <span class="src">『데이터 과학』 138쪽</span></div>
-    <p class="q">"레이블은 모델이 예측하고자 하는 정답 값을 의미한다." <span class="src">(138쪽)</span></p>
-    <p class="t">→ 분류 모델을 만들려면 각 데이터에 정답(레이블)이 먼저 붙어 있어야 한다. 그런데 우리 영화 표에는 "성공/기준 미달" 열이 없다.</p>
+  <div class="callout data">
+    <div class="h">📦 캐글(Kaggle)은 어떤 곳인가</div>
+    <p>캐글은 전 세계 사람들이 데이터와 분석 코드를 올려 공유하는 플랫폼입니다. 데이터 분석 대회도 자주 열리며, 연습용 데이터를 찾을 때 가장 많이 찾는 곳이기도 합니다.</p>
+    <figure class="case" style="margin:12px 0 10px"><img src="img/lesson11_kaggle.png" alt="캐글의 Stroke Prediction Dataset 데이터 카드 화면. 왼쪽에 게시자 FEDESORIANO와 제목이, 오른쪽에 라이선스 Data files © Original Authors가 표시되어 있다" loading="lazy" width="2880" height="1200" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--border)">
+      <figcaption>오늘 사용할 데이터의 캐글 화면입니다. 왼쪽 위에 <b>게시자</b>, 오른쪽에 <b>라이선스</b>가 적혀 있습니다. 원자료를 어디에서 모았는지는 이 화면 어디에도 없습니다. 출처가 명시되지 않았다는 것은 <b>데이터를 누구에게서, 언제, 어떤 기준으로 수집했는지 알 수 없다</b>는 뜻입니다. 따라서 이 데이터로 얻은 결과를 누구에게 적용할 수 있는지 판단하기 어렵습니다. 출처: <a href="https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset" target="_blank" rel="noopener">kaggle.com</a> (2026-09-19 갈무리)</figcaption></figure>
+    <p>누구나 데이터를 올릴 수 있어 출처 표기의 수준이 제각각입니다. 기관이 공식적으로 올린 데이터도 있지만, 이 데이터처럼 원자료의 출처가 적혀 있지 않은 경우도 있습니다. 그래서 캐글에서 데이터를 고를 때는 <b>게시자, 라이선스, 원자료 출처</b> 세 가지를 먼저 확인하는 것이 좋습니다.</p>
+    <p>그렇다면 출처를 알 수 없는 데이터를 왜 사용할까요? 분류를 배우기에 크기와 형태가 알맞고, 교육 목적의 사용이 허용되어 있기 때문입니다. 다만 여기서 얻은 결과를 실제 의학적 판단에 사용해서는 안 됩니다. <b>출처를 확인할 수 없다는 사실을 직접 확인하는 것</b> 역시 오늘 수업의 중요한 목표 중 하나입니다.</p>
   </div>
-  <p>영화 표에는 관객 수가 있지만 “흥행 성공”이라는 라벨은 없습니다. 수업에서는 <b>기록된 누적 관객 수가 100만 명 이상이면 성공(1), 미만이면 기준 미달(0)</b>로 정합니다. 이는 분류 연습을 위한 정의입니다. 제작비·수익 자료가 없으므로 실제 흑자와 적자를 뜻하지 않습니다. 다른 기준을 선택하면 라벨과 예측 과제도 달라집니다.</p>
 
-  
-  <figure class="interactive" data-fig="labelline">
-    <div class="widget" data-w="labelline">
-  <svg viewBox="0 0 720 348" role="img" aria-label="216편의 관객 수 분포와 성공 기준선. 기준선을 옮기면 성공 라벨 편수와 경계에 걸린 두 편이 바뀌고, 이유를 적어야 정확도가 공개되는 그림">
-    <text x="56" y="26" text-anchor="start" font-size="15" font-weight="800" fill="#1c2230">216편의 관객 수 분포 · 가로축 로그</text>
-    <g class="bars"></g>
-    <line x1="56" y1="214" x2="430" y2="214" stroke="#e3ddcf" stroke-width="1.5"/>
-    <text x="56" y="234" text-anchor="middle" font-size="14" fill="#6b7385">1천</text>
-    <text x="144" y="234" text-anchor="middle" font-size="14" fill="#6b7385">1만</text>
-    <text x="232" y="234" text-anchor="middle" font-size="14" fill="#6b7385">10만</text>
-    <text x="320" y="234" text-anchor="middle" font-size="14" fill="#6b7385">100만</text>
-    <text x="408" y="234" text-anchor="middle" font-size="14" fill="#6b7385">1000만</text>
-    <line class="thrline" x1="320" y1="60" x2="320" y2="222" stroke="#d64545" stroke-width="2"/>
-    <rect class="thrhandle" x="315" y="46" width="10" height="16" rx="3" fill="#d64545"/>
+  <p>영화진흥위원회나 나이스의 데이터는 공개한 기관을 확인할 수 있었습니다. 반면 이 데이터의 설명에는 <code>Confidential Source</code>라고만 적혀 있습니다. 이 설명만으로는 원본 데이터가 어디에서 수집되었는지 확인할 수 없습니다.</p>
 
-    <g class="bpanel">
-      <rect x="452" y="40" width="244" height="92" rx="6" fill="#fff" stroke="#e3ddcf" stroke-width="1.5"/>
-      <text class="b1" x="464" y="66" font-size="15" font-weight="800" fill="#1c2230"></text>
-      <text class="b2" x="464" y="90" font-size="14" fill="#6b7385"></text>
-      <text class="b3" x="464" y="116" font-size="14" font-weight="800" fill="#b07a00"></text>
-    </g>
-
-    <g class="cpanel">
-      <rect x="452" y="144" width="244" height="112" rx="6" fill="#fff" stroke="#2b7fd6" stroke-width="2"/>
-      <text x="464" y="168" font-size="14" font-weight="800" fill="#6b7385">시험용 66편 정확도</text>
-      <text x="464" y="196" font-size="14" fill="#1c2230">로지스틱 회귀</text>
-      <text class="clog" x="684" y="196" text-anchor="end" font-size="17" font-weight="800" fill="#b07a00" style="font-variant-numeric:tabular-nums"></text>
-      <text x="464" y="222" font-size="14" fill="#1c2230">의사결정트리</text>
-      <text class="ctree" x="684" y="222" text-anchor="end" font-size="17" font-weight="800" fill="#b07a00" style="font-variant-numeric:tabular-nums"></text>
-      <text x="464" y="246" font-size="14" fill="#6b7385">학습용 150편 · 문턱값 0.5</text>
-    </g>
-    <g class="cover">
-      <rect x="452" y="144" width="244" height="112" rx="6" fill="#fff" opacity="0.92"/>
-      <text class="cv1" x="574" y="188" text-anchor="middle" font-size="14" font-weight="800" fill="#d64545"></text>
-      <text class="cv2" x="574" y="212" text-anchor="middle" font-size="14" fill="#6b7385"></text>
-    </g>
-
-    <line x1="56" y1="270" x2="696" y2="270" stroke="#e3ddcf" stroke-width="1"/>
-    <text class="dhead" x="56" y="290" font-size="14" font-weight="800" fill="#6b7385"></text>
-    <circle cx="62" cy="308" r="5" fill="#b07a00"/>
-    <text class="dhi" x="76" y="312" font-size="14" fill="#1c2230"></text>
-    <circle cx="62" cy="330" r="5" fill="#b9b3a5"/>
-    <text class="dlo" x="76" y="334" font-size="14" fill="#1c2230"></text>
-  </svg>
-  <div class="wctl">
-    <label>성공 기준 <input type="range" class="thr" min="0" max="9" step="1" value="5"> <span class="wv">100만 명</span></label>
-    <button class="wbtn" type="button" data-r="언론이 쓰는 흥행 기준">언론이 쓰는 흥행 기준</button>
-    <button class="wbtn" type="button" data-r="216편 중 10% 안팎">216편 중 10% 안팎</button>
-    <button class="wbtn" type="button" data-r="우리 반의 체감 대흥행">우리 반의 체감 대흥행</button>
-    <button class="wbtn" type="button" data-r="성공 라벨 수 확보">성공 라벨 수 확보</button>
-    <input type="text" class="wtxt" maxlength="40" placeholder="직접 입력 · 8자 이상">
-    <button class="wbtn wgo" type="button" disabled>내 기준 제출</button>
-    <span class="wout"></span>
+  <div class="callout warn">
+    <div class="h">⚠️ 이 데이터로 할 수 없는 말</div>
+    <p>이 데이터만으로 실제 환자를 찾아낼 수는 없습니다. 더 중요한 것은 <b>원자료의 출처를 확인할 수 없다는 점</b>입니다. 오늘 모델은 분류를 배우기 위한 연습용이며 실제 의학적 판단에는 사용하지 않습니다.</p>
   </div>
-</div>
-    <figcaption>기준선을 옮기면 성공 라벨의 수와 경계에 걸린 영화가 바뀝니다. 라벨을 바꾼 뒤에는 '다시 학습'을 눌러야 정확도가 다시 나타납니다.</figcaption>
-  </figure>
 
 
-  <h2>3. 실습 — 영화 흥행 분류기 (바이브 코딩)</h2>
-  <p>4차시의 영화별 표(<a href="https://github.com/greatsong/modudata/blob/bb860932644270ad1199f10d3e7670e30231bce4/data/kobis_movies.csv" target="_blank" rel="noopener"><code>kobis_movies.csv</code></a>)로 앱을 만듭니다. <b>개봉 전 흥행 예측이 목표라면 입력도 개봉 전에 확보한 값이어야 합니다.</b> 그러나 이 표의 <code>first_scrn</code>·<code>first_show</code>는 일별 10위권에 처음 관측된 날의 집계값입니다. 따라서 아래 코드는 기록된 자료를 이용한 분류 연습이며, 개봉 전 예측 성능을 검증한 결과가 아닙니다. <code>total_audi</code>도 수집 자료에 기록된 누적값으로, 모든 영화의 최종 관객 수를 보장하지 않습니다.</p>
-
+  <h3>실습 ① — 데이터 소개 화면 만들기</h3>
+  <p>데이터 소개 화면에는 <b>숫자 카드 네 개, 열 설명 표, 처음 다섯 행, 출처</b>를 배치합니다. 이 화면에서 데이터의 규모와 각 열의 의미, 이용 조건을 확인할 수 있도록 만듭니다.</p>
   <ol class="steps">
-    <li><span class="st">① 샘플 프롬프트 — 그대로 붙여 넣기</span>
-      <div class="codewrap prompt"><span class="label">① 프롬프트</span><button class="copy-btn">복사</button><pre>"흥행 분류기" 스트림릿 앱을 파일 하나로 만들어 줘.
-데이터: https://raw.githubusercontent.com/greatsong/modudata/bb860932644270ad1199f10d3e7670e30231bce4/data/kobis_movies.csv
-이 파일의 열 이름은 movieCd, movieNm, openDt, genre, nation, first_scrn, first_show, first_date, peak, first_week_audi, total_audi, days_in_top10이고, 인코딩은 UTF-8이야.
-수업의 분석 대상은 2025년 9월부터 2026년 7월까지 개봉한 216편이야.
-total_audi가 100만 명 이상이면 성공, 미만이면 기준 미달로 분류해 줘.
-기준은 50만·100만·300만 명 중 고를 수 있게 해 줘.
-입력은 first_scrn·first_show·peak·genre·nation을 사용해 줘.
-first_scrn·first_show는 개봉일이 아니라 10위권에 처음 관측된 날의 집계야.
-first_week_audi·total_audi·days_in_top10은 입력에서 제외해 줘.
-영화 코드 순으로 정렬해 열 편 중 앞 세 편을 시험용으로 고정하고,
-학습용으로만 학습과 표준화를 해 줘. 두 모델은 같은 시험용 자료로 평가해 줘.
-학습용과 시험용의 영화 편수를 화면에 적어 줘.
-시험용 자료로 계산한 정확도를 화면에 표시해 줘.
-시험용 영화 하나를 고르면 로지스틱 회귀의 추정 확률과 예측 범주를 보여 줘.
-확률이 0.5 이상이면 성공으로 분류하고 실제 라벨도 함께 보여 줘.
-시험용 영화의 추정 확률을 높은 순으로 막대그래프로 그리고,
-문턱값 0.5 선을 함께 표시하고 실제 성공과 기준 미달을 색으로 구분해 줘.
-영화 제목이 겹치지 않게 가로축 글자를 기울여 줘.
-그래프는 plotly로 그려 줘.
-이 코드의 평가는 기록된 자료의 분류 연습이며, 개봉 전 예측 성능이 아님을 표시해 줘.
-필요한 라이브러리 목록(requirements.txt)도 같이 줘. 버전 숫자 없이 이름만.</pre></div>
-      <details class="sample"><summary>선생님이 실행해 확인한 예시 코드</summary><p class="mini">main.py와 requirements.txt, 두 파일로 저장합니다. 본문 표와 같은 자료·분할을 사용합니다. 학습용은 150편, 시험용은 66편입니다. 라이브러리 버전이나 설정을 바꾸면 결과가 달라질 수 있습니다.</p><div class="codewrap code"><span class="label">main.py</span><pre># main.py — 기록된 관객 수의 기준 충족 여부를 분류한다
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier, export_text, export_graphviz
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import accuracy_score
+<li><span class="st">① 샘플 프롬프트 — 그대로 붙여 넣기</span>
+  <div class="codewrap prompt"><span class="label">① 프롬프트</span><button class="copy-btn">복사</button><pre>"뇌졸중 예측 실습실" 스트림릿 앱을 main.py 파일 하나로 만들어 줘.
+화면 맨 위에 앱 제목과 어울리는 아이콘을 넣고, 브라우저 탭에도 그 제목이 표시되게 해 줘.
+데이터: https://raw.githubusercontent.com/greatsong/modudata/main/data/stroke.csv
+이 파일의 열 이름은 id, gender, age, hypertension, heart_disease, ever_married,
+work_type, Residence_type, avg_glucose_level, bmi, smoking_status, stroke이고,
+인코딩은 UTF-8이야. bmi 열에는 빈 값이 있어.
+첫 화면은 이 데이터가 무엇인지 소개하는 화면이야.
+맨 위에 전체 사람 수, 열 개수, stroke가 1인 사람 수, 그 비율을 큰 숫자 카드 네 개로 보여 줘.
+그 아래에 열 이름·우리말 뜻·값의 종류·빈 값 개수를 담은 표를 보여 줘.
+우리말 뜻 칸은 비워 두고, 내가 교재를 보고 직접 채워 넣을 수 있게 만들어 줘.
+표 아래에 데이터를 처음 다섯 줄만 그대로 보여 줘.
+맨 아래에 데이터 출처를 적는 자리를 만들어 줘. 내가 적을 글은 교재에 있어.
+우리말 뜻과 출처 칸에 적은 내용은 내_기록 폴더에 json 파일로 저장해서, 새로고침해도 다시 불러오게 해 줘.
+사용할 수 있는 라이브러리는 streamlit, pandas, plotly, scikit-learn 네 가지뿐이야.
+그림을 그린다면 plotly로만 그려 줘.
+requirements.txt도 꼭 같이 만들어 줘. 그 네 가지를 버전 숫자 없이 이름만 적어 줘.</pre></div>
+  <details class="sample"><summary>선생님이 실행해 확인한 예시 코드</summary><p class="mini">main.py와 requirements.txt, 두 파일로 저장합니다. 데이터는 고정되어 있으므로 화면의 숫자는 언제 실행해도 같습니다. 다만 라이브러리 버전이나 설정을 바꾸면 값이 달라질 수 있습니다.</p>
+  <div class="codewrap code"><span class="label">② AI가 준 코드 예시 — <button type="button" class="fname">main.py</button></span><button class="copy-btn">복사</button><pre># main.py — 뇌졸중 예측 실습실: 이 데이터가 무엇인지 소개하는 첫 화면
+import json
+from pathlib import Path
 
-MOVIES = "https://raw.githubusercontent.com/greatsong/modudata/bb860932644270ad1199f10d3e7670e30231bce4/data/kobis_movies.csv"
+import pandas as pd
+import streamlit as st
+
+st.set_page_config(page_title="뇌졸중 예측 실습실", page_icon="🩺", layout="wide")
+st.title("🩺 뇌졸중 예측 실습실")
+st.write("건강 기록 5,110명분을 읽어 옵니다. 왼쪽 메뉴에서 페이지를 넘기며 들여다보고, 모델을 만들고, 채점합니다.")
+
+데이터주소 = "https://raw.githubusercontent.com/greatsong/modudata/main/data/stroke.csv"
 
 
 @st.cache_data
-def load_data():
-    df = pd.read_csv(MOVIES, dtype={"movieCd": str}).sort_values("movieCd").reset_index(drop=True)
-    df["장르"] = df["genre"].str.split("|").str[0]
-    df["국가"] = df["nation"].str.split("|").str[0]
-    return df
+def 데이터_읽기():
+    """UTF-8로 저장된 csv를 읽는다. bmi 열의 빈 값은 그대로 빈 값으로 남는다."""
+    return pd.read_csv(데이터주소, encoding="utf-8")
 
 
-df = load_data()
-기준 = st.selectbox("성공 기준 (총 관객)", [500_000, 1_000_000, 3_000_000], index=1)
-df["성공"] = (df["total_audi"] &gt;= 기준).astype(int)
-st.caption(f"성공 {df['성공'].sum()}편 / {len(df)}편")
-st.info("기록된 자료의 분류 연습입니다. 개봉 전 예측 성능을 뜻하지 않습니다.")
+df = 데이터_읽기()
 
-is_test = df.index % 10 &lt; 3
-features = df[["first_scrn", "first_show", "peak", "장르", "국가"]]
-Xtr = pd.get_dummies(features[~is_test])
-Xte = pd.get_dummies(features[is_test]).reindex(columns=Xtr.columns, fill_value=0)
-X = pd.concat([Xtr, Xte]).sort_index()
-is_test = df.index % 10 &lt; 3                      # 열 편 중 앞 세 편을 시험용으로
-st.caption(f"학습용 {(~is_test).sum()}편 · 시험용 {is_test.sum()}편 (2025년 9월~2026년 7월 개봉 216편)")
-Xtr, Xte = X[~is_test], X[is_test]
-ytr, yte = df["성공"][~is_test], df["성공"][is_test]
+저장파일 = Path("내_기록") / "데이터_소개.json"   # 적은 내용을 남겨 두어 새로고침해도 다시 불러온다
 
-scaler = StandardScaler().fit(Xtr)
-logi = LogisticRegression(max_iter=2000).fit(scaler.transform(Xtr), ytr)
-tree = DecisionTreeClassifier(max_depth=3, random_state=0).fit(Xtr, ytr)
 
-c1, c2 = st.columns(2)
-prob = logi.predict_proba(scaler.transform(Xte))[:, 1]
-c1.metric("로지스틱 회귀 정확도", f"{accuracy_score(yte, (prob &gt;= 0.5).astype(int)):.3f}")
-c2.metric("의사결정트리 정확도", f"{accuracy_score(yte, tree.predict(Xte)):.3f}")
-확률표 = pd.DataFrame({"영화": df.loc[is_test, "movieNm"].values,
-                     "추정 확률": prob,
-                     "실제": ["성공" if v else "기준 미달" for v in yte]})
-확률표 = 확률표.sort_values("추정 확률", ascending=False)
-fig = px.bar(확률표, x="영화", y="추정 확률", color="실제",
-             color_discrete_map={"성공": "#b07a00", "기준 미달": "#b9b3a5"})
-fig.add_hline(y=0.5, line_dash="dash", annotation_text="문턱값 0.5")
-fig.update_layout(xaxis_tickangle=-60, height=460, xaxis_title=None)
-st.plotly_chart(fig, width="stretch")
-st.caption("막대는 시험용 66편의 추정 확률입니다. 색은 실제 라벨입니다.")
+def 적어둔것_읽기():
+    """전에 적어 둔 내용을 읽는다. 아직 없으면 빈 사전을 돌려준다."""
+    try:
+        return json.loads(저장파일.read_text(encoding="utf-8"))
+    except (FileNotFoundError, ValueError):
+        return {}
 
-choices = df.loc[is_test].copy()
-selected = st.selectbox("시험용 영화", list(range(len(choices))),
-                        format_func=lambda i: choices.iloc[i]["movieNm"])
-p = float(prob[selected])
-st.write(f"추정 성공 확률: {p:.1%}")
-st.write("예측:", "성공" if p &gt;= 0.5 else "기준 미달")
-st.write("실제 라벨:", "성공" if int(yte.iloc[selected]) else "기준 미달")
-st.caption("이 확률은 모델의 추정값이며 실제 성공 가능성을 보장하지 않습니다.")</pre></div>
-      <div class="codewrap code"><span class="label">두 번째 파일 — <button type="button" class="fname">requirements.txt</button></span><button class="copy-btn">복사</button><pre>streamlit
+
+적어둔것 = 적어둔것_읽기()
+
+st.subheader("한눈에 보기")
+칸1, 칸2, 칸3, 칸4 = st.columns(4)
+칸1.metric("전체 사람 수", f"{len(df):,}명")
+칸2.metric("열 개수", f"{df.shape[1]}개")
+칸3.metric("뇌졸중을 겪은 사람", f"{int(df['stroke'].sum()):,}명")
+칸4.metric("그 비율", f"{df['stroke'].mean() * 100:.2f}%")
+
+st.subheader("열마다 무엇이 들어 있는가")
+st.caption("우리말 뜻 칸은 비어 있습니다. 교재의 열 대응표를 보고 직접 채워 넣으세요. "
+           "적은 내용은 이 브라우저에 저장되어 새로고침해도 남습니다.")
+
+
+def 값의_종류(열):
+    """숫자 열은 가장 작은 값과 가장 큰 값을, 글자 열은 값의 가짓수와 실제 값을 적는다."""
+    칸 = df[열].dropna()
+    if pd.api.types.is_numeric_dtype(칸) and 칸.nunique() &gt; 2:
+        return f"숫자 {칸.min():g} ~ {칸.max():g}"
+    값들 = sorted(칸.unique().astype(str))
+    return f"{len(값들)}가지 · " + " · ".join(값들)
+
+
+# 표를 그릴 때마다 바탕을 새로 만들면 고쳐 쓰던 칸이 지워지므로, 이 페이지를 열 때 한 번만 만든다
+if "열설명표" not in st.session_state:
+    적어둔뜻 = 적어둔것.get("우리말 뜻", {})
+    st.session_state["열설명_바탕"] = pd.DataFrame({
+        "열 이름": df.columns,
+        "우리말 뜻": [적어둔뜻.get(열, "") for 열 in df.columns],
+        "값의 종류": [값의_종류(열) for 열 in df.columns],
+        "빈 값 개수": [int(df[열].isna().sum()) for 열 in df.columns],
+    })
+열설명 = st.session_state["열설명_바탕"]
+
+
+def 저장하기():
+    """우리말 뜻과 출처 칸에 적은 내용을 파일에 남긴다."""
+    뜻 = dict(zip(열설명["열 이름"], 열설명["우리말 뜻"]))
+    for 줄, 바뀐것 in st.session_state.get("열설명표", {}).get("edited_rows", {}).items():
+        if "우리말 뜻" in 바뀐것:
+            뜻[열설명["열 이름"][int(줄)]] = 바뀐것["우리말 뜻"] or ""
+    저장파일.parent.mkdir(exist_ok=True)
+    저장파일.write_text(json.dumps({"우리말 뜻": 뜻, "출처": st.session_state.get("출처", "")},
+                                   ensure_ascii=False), encoding="utf-8")
+
+
+st.data_editor(
+    열설명,
+    width="stretch",
+    hide_index=True,
+    disabled=["열 이름", "값의 종류", "빈 값 개수"],   # 우리말 뜻 칸만 고쳐 쓸 수 있다
+    key="열설명표",
+    on_change=저장하기,
+)
+
+st.subheader("앞 다섯 줄 그대로 보기")
+st.dataframe(df.head(5), width="stretch", hide_index=True)
+
+st.subheader("이 데이터는 어디서 왔는가")
+출처_기본값 = """출처: 캐글 Stroke Prediction Dataset (게시자 fedesoriano, 2021-01-26 공개)
+원본 주소: https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset
+라이선스: Data files © Original Authors
+게시자가 적은 문구: (Confidential Source) - Use only for educational purposes
+이 수업에서는 교육 목적으로만 사용합니다."""
+if "출처" not in st.session_state:
+    st.session_state["출처"] = 적어둔것.get("출처", 출처_기본값)
+st.text_area("교재를 보고 여기에 적습니다", height=170, key="출처", on_change=저장하기)
+st.caption("이 데이터를 올린 사람은 원본 데이터가 어디서 왔는지 밝히지 않았고, 교육 목적으로만 사용하라고 적어 두었습니다. "
+           "이름이나 생년월일이 없어 실제 환자를 찾아낼 수는 없지만, 출처를 알 수 없는 데이터로 얻은 결과를 "
+           "실제 의학적 판단에 사용해서는 안 됩니다.")</pre></div>
+  <div class="codewrap code"><span class="label">두 번째 파일 — <button type="button" class="fname">requirements.txt</button></span><button class="copy-btn">복사</button><pre>streamlit
 pandas
 plotly
 scikit-learn</pre></div></details>
     </li>
-    <li><span class="st">② AI가 준 코드 — 실행하고 확률을 읽는다</span><br>
-      받은 코드를 <b>main.py</b> 파일과 <b>requirements.txt</b> 파일 두 개로 저장해 실행합니다. 화면에 새로 나타나는 그림에는 시험용 66편의 추정 확률이 막대로 표시되고 문턱값 0.5 선이 함께 그려집니다. 시험용 영화를 하나 고르면 추정 성공 확률이 나타납니다. 확률이 0.5 이상이면 성공, 미만이면 기준 미달로 분류합니다. 실제 라벨과 비교해 맞힌 사례와 틀린 사례를 찾아봅니다. 화면에 함께 표시되는 <b>정확도</b>를 기록해 두세요.</li>
-    <li><span class="st">③ 개선 프롬프트 — 같은 문제를 트리에게</span>
-      <div class="codewrap improve"><span class="label">③ 개선</span><button class="copy-btn">복사</button><pre>의사결정트리로도 만들어서 어떤 질문을 어떤 순서로 던지는지
-그림으로 보여 줘. 두 모델의 정확도를 나란히 비교해 줘.</pre></div>
-      <details class="sample"><summary>선생님이 실행해 확인한 예시 코드</summary><p class="mini">앞 코드 끝에 이어 붙입니다</p><div class="codewrap code"><span class="label">main.py에 이어 붙일 부분</span><pre># 트리가 던지는 질문의 순서
-st.subheader("트리는 어떤 질문을 먼저 던지나")
-st.graphviz_chart(export_graphviz(tree, out_file=None, feature_names=list(X.columns),
-                                  class_names=["기준 미달", "성공"], filled=True))
-st.code(export_text(tree, feature_names=list(X.columns), max_depth=3))
-st.caption("학습용과 시험용을 어떻게 나누느냐에 따라 정확도는 달라집니다.")</pre></div></details>
+  </ol>
+
+  <h3>화면 읽기 — 데이터 규모와 출처 확인하기</h3>
+  <p>앱에서 <b>데이터 규모 → 열의 의미와 빈 값 → 출처</b>를 차례로 확인합니다. 뇌졸중을 겪은 사람 수와 비율을 확인하고, 아래 대응표를 참고해 열의 우리말 뜻을 채웁니다. 어느 열에 빈 값이 있는지도 살펴봅니다. 출처 칸에는 캐글 원본 페이지의 사사 문구와 라이선스를 옮겨 적습니다. 확인되지 않는 정보는 <b>확인할 수 없음</b>으로 남겨 둡니다.</p>
+  <table class="daymap">
+    <thead><tr><th>열 이름</th><th>우리말 뜻</th><th>값의 모양</th></tr></thead>
+    <tbody>
+      <tr><td><code>id</code></td><td>번호</td><td>중복 없는 번호</td></tr>
+      <tr><td><code>gender</code></td><td>성별</td><td>Female 여성 · Male 남성 · Other 기타</td></tr>
+      <tr><td><code>age</code></td><td>나이</td><td>숫자. 한 살 미만은 0.08처럼 적혀 있음</td></tr>
+      <tr><td><code>hypertension</code></td><td>고혈압</td><td>1 있음 · 0 없음</td></tr>
+      <tr><td><code>heart_disease</code></td><td>심장병</td><td>1 있음 · 0 없음</td></tr>
+      <tr><td><code>ever_married</code></td><td>결혼 경험</td><td>Yes 있음 · No 없음</td></tr>
+      <tr><td><code>work_type</code></td><td>직업 형태</td><td>Private 민간 기업 · Self-employed 자영업 · Govt_job 공무원 · children 아동 · Never_worked 근무 경험 없음</td></tr>
+      <tr><td><code>Residence_type</code></td><td>거주 지역</td><td>Urban 도시 · Rural 농촌</td></tr>
+      <tr><td><code>avg_glucose_level</code></td><td>평균 혈당</td><td>숫자</td></tr>
+      <tr><td><code>bmi</code></td><td>체질량지수</td><td>숫자. <b>비어 있는 값이 있음</b></td></tr>
+      <tr><td><code>smoking_status</code></td><td>흡연 상태</td><td>never smoked 피운 적 없음 · formerly smoked 예전에 피움 · smokes 피움 · Unknown 알 수 없음</td></tr>
+      <tr><td><code>stroke</code></td><td>뇌졸중</td><td>1 겪음 · 0 겪지 않음. <b>오늘 맞힐 답입니다</b></td></tr>
+    </tbody>
+  </table>
+  <p class="mini">열 이름과 값은 영문 그대로 두고, 우리말 뜻만 채웁니다.</p>
+  <p>숫자 카드에서 <b>뇌졸중을 겪은 사람의 비율</b>을 찾아 적습니다. ________ % — 약 스무 명 가운데 한 명입니다. 이 비율은 다음 시간에 모델의 정확도를 해석할 때 다시 사용합니다.</p>
+
+  <h2>2. 데이터 살펴보기</h2>
+  <p>어떤 속성이 뇌졸중 여부를 구분하는 데 도움이 될까요? 모델을 만들기 전에 <b>값의 분포, 두 그룹의 차이, 비어 있는 값</b>을 살펴봅니다. 이처럼 데이터의 특성을 파악하는 과정을 <b>탐색적 데이터 분석</b>이라고 합니다.</p>
+  <p>뇌졸중을 겪은 그룹과 겪지 않은 그룹에서 값의 분포가 비슷하다면, 그 속성만으로 두 그룹을 구분하기는 어렵습니다. <b>탐색 결과를 바탕으로 모델의 입력 후보를 고릅니다.</b></p>
+
+  <div class="callout tip">
+    <div class="h">📁 pages 폴더로 페이지 추가하기 (5차시 복습)</div>
+    <p>스트림릿은 <code>main.py</code>와 나란한 곳에 <b>소문자 <code>pages</code></b> 폴더를 두면 그 안의 파일을 왼쪽 메뉴로 만들어 줍니다. 파일 이름 앞의 숫자가 메뉴 순서이고, <code>requirements.txt</code>는 저장소에 하나만 두면 앱 전체에 적용됩니다.</p>
+  </div>
+
+  <h3>실습 ② — 데이터 탐색 화면 만들기</h3>
+  <ol class="steps">
+<li><span class="st">① 샘플 프롬프트 — 그대로 붙여 넣기</span>
+  <div class="codewrap prompt"><span class="label">① 프롬프트</span><button class="copy-btn">복사</button><pre>pages 폴더에 '탐색' 페이지를 추가해 줘. 파일 이름은 1_탐색.py.
+바뀐 파일 전체를 다시 줘. 바뀐 부분만 주지 말고.
+첫 화면과 같은 데이터를 같은 주소에서 UTF-8로 읽어 줘.
+- 나이와 평균 혈당의 분포를 히스토그램 두 개로 나란히 보여 줘.
+- 뇌졸중을 겪은 사람과 겪지 않은 사람으로 나누어, 나이와 평균 혈당을
+  상자그림 두 개로 비교해 줘. 두 그룹의 평균값도 표로 함께 적어 줘.
+- 고혈압이 있는 사람과 없는 사람의 뇌졸중 비율을 막대그래프로 보여 줘.
+  심장병도 같은 방법으로 보여 줘.
+- 체질량지수(bmi)가 비어 있는 사람들만 따로 세어서, 그 사람들의 뇌졸중 비율과
+  전체 뇌졸중 비율을 한 표에 나란히 보여 줘.
+- 흡연 상태의 값마다 사람 수를 세어 표로 보여 줘.
+그림은 plotly로만 그려 줘. requirements.txt는 그대로 두면 돼.</pre></div>
+  <details class="sample"><summary>선생님이 실행해 확인한 예시 코드</summary><p class="mini">pages 폴더를 만들고 그 안에 저장합니다. requirements.txt는 그대로 둡니다. 데이터는 고정되어 있으므로 화면의 숫자는 언제 실행해도 같습니다. 다만 라이브러리 버전이나 설정을 바꾸면 값이 달라질 수 있습니다.</p>
+  <div class="codewrap code"><span class="label">② AI가 준 코드 예시 — <button type="button" class="fname">pages/1_탐색.py</button></span><button class="copy-btn">복사</button><pre># pages/1_탐색.py — 나이·혈당의 분포, 두 그룹 비교, 고혈압·심장병별 비율, 빈 값 살펴보기
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+
+st.set_page_config(page_title="탐색", page_icon="🔍", layout="wide")
+st.title("🔍 탐색")
+st.write("모델을 만들기 전에 데이터를 들여다봅니다. 화면의 값을 교재의 빈 표에 적으세요.")
+
+데이터주소 = "https://raw.githubusercontent.com/greatsong/modudata/main/data/stroke.csv"
+
+
+@st.cache_data
+def 데이터_읽기():
+    return pd.read_csv(데이터주소, encoding="utf-8")
+
+
+df = 데이터_읽기()
+df["뇌졸중"] = df["stroke"].map({1: "뇌졸중 있음", 0: "뇌졸중 없음"})
+
+st.subheader("1. 나이와 평균 혈당은 어떻게 퍼져 있는가")
+왼쪽, 오른쪽 = st.columns(2)
+with 왼쪽:
+    st.plotly_chart(px.histogram(df, x="age", nbins=40, title="나이 분포",
+                                 labels={"age": "나이", "count": "사람 수"}), width="stretch")
+with 오른쪽:
+    st.plotly_chart(px.histogram(df, x="avg_glucose_level", nbins=40, title="평균 혈당 분포",
+                                 labels={"avg_glucose_level": "평균 혈당", "count": "사람 수"}), width="stretch")
+
+st.subheader("2. 뇌졸중을 겪은 사람과 겪지 않은 사람은 무엇이 다른가")
+왼쪽, 오른쪽 = st.columns(2)
+with 왼쪽:
+    st.plotly_chart(px.box(df, x="뇌졸중", y="age", color="뇌졸중", title="나이 비교",
+                           labels={"age": "나이"}), width="stretch")
+with 오른쪽:
+    st.plotly_chart(px.box(df, x="뇌졸중", y="avg_glucose_level", color="뇌졸중", title="평균 혈당 비교",
+                           labels={"avg_glucose_level": "평균 혈당"}), width="stretch")
+
+두그룹 = df.groupby("뇌졸중").agg(
+    평균_나이=("age", "mean"),
+    평균_혈당=("avg_glucose_level", "mean"),
+    고혈압_비율=("hypertension", "mean"),
+    심장병_비율=("heart_disease", "mean"),
+    사람_수=("id", "size"),
+).reset_index()
+두그룹["평균_나이"] = 두그룹["평균_나이"].round(1)
+두그룹["평균_혈당"] = 두그룹["평균_혈당"].round(1)
+두그룹["고혈압_비율"] = (두그룹["고혈압_비율"] * 100).round(1).astype(str) + "%"
+두그룹["심장병_비율"] = (두그룹["심장병_비율"] * 100).round(1).astype(str) + "%"
+st.dataframe(두그룹, width="stretch", hide_index=True)
+
+st.subheader("3. 고혈압과 심장병이 있으면 뇌졸중 비율이 다른가")
+
+
+def 비율표(열, 이름):
+    """0과 1로 적힌 열마다 뇌졸중 비율을 구한다."""
+    표 = df.groupby(열)["stroke"].mean().reset_index()
+    표[열] = 표[열].map({1: f"{이름} 있음", 0: f"{이름} 없음"})
+    표["뇌졸중 비율(%)"] = (표["stroke"] * 100).round(2)
+    return 표.rename(columns={열: "구분"})[["구분", "뇌졸중 비율(%)"]]
+
+
+왼쪽, 오른쪽 = st.columns(2)
+with 왼쪽:
+    st.plotly_chart(px.bar(비율표("hypertension", "고혈압"), x="구분", y="뇌졸중 비율(%)",
+                           title="고혈압 여부별 뇌졸중 비율", text="뇌졸중 비율(%)"), width="stretch")
+with 오른쪽:
+    st.plotly_chart(px.bar(비율표("heart_disease", "심장병"), x="구분", y="뇌졸중 비율(%)",
+                           title="심장병 여부별 뇌졸중 비율", text="뇌졸중 비율(%)"), width="stretch")
+
+st.subheader("4. 체질량지수가 비어 있는 사람들은 누구인가")
+빈사람 = df[df["bmi"].isna()]
+빈값표 = pd.DataFrame({
+    "구분": ["체질량지수가 비어 있는 사람", "전체"],
+    "사람 수": [len(빈사람), len(df)],
+    "그중 뇌졸중": [int(빈사람["stroke"].sum()), int(df["stroke"].sum())],
+    "뇌졸중 비율(%)": [round(빈사람["stroke"].mean() * 100, 2), round(df["stroke"].mean() * 100, 2)],
+})
+st.dataframe(빈값표, width="stretch", hide_index=True)
+st.caption("비어 있다는 것도 데이터입니다. 이 사람들을 어떻게 할지는 다음 시간에 정합니다.")
+
+st.subheader("5. 흡연 상태에는 어떤 값이 적혀 있는가")
+흡연 = df["smoking_status"].value_counts().reset_index()
+흡연.columns = ["흡연 상태", "사람 수"]
+흡연["비율(%)"] = (흡연["사람 수"] / len(df) * 100).round(1)
+st.dataframe(흡연, width="stretch", hide_index=True)</pre></div></details>
     </li>
   </ol>
 
-  <div class="callout tip">
-    <div class="h">💡 변수 이름보다 실제 집계 시점을 확인합니다</div>
-    <p>개봉 전에 예측하려면 first_scrn·first_show를 포함해 입력의 수집 시점을 다시 확인해야 합니다. 미래에 알게 되는 값을 빼 달라는 문장만으로 누수를 막을 수는 없습니다. 다음 시간에는 예측 시점에 사용할 수 없는 값을 입력에 넣었을 때의 문제를 살펴봅니다.</p>
-  </div>
-
-  <h2>4. 두 모델 비교 — 확률로 답하는 모델, 질문으로 답하는 모델</h2>
-  <p>트리는 조건을 따라 데이터를 나누는 과정을 보여 줍니다. 위에서부터 조건과 가지를 읽으며 한 영화가 어느 끝마디에 도착하는지 따라가 봅니다. 첫 번째 분기만으로 변수의 중요도 전체를 판단할 수는 없습니다. 이 코드의 특성 중요도는 <b>각 변수가 여러 분기에서 클래스의 섞임을 얼마나 줄였는지</b>를 데이터 수로 가중해 합산한 값입니다.</p>
+  <h3>화면 읽기 — 두 그룹의 차이 찾기</h3>
+  <figure class="case" style="margin:12px 0 10px"><img src="img/lesson11_app_box.png" alt="나이 상자그림. 뇌졸중 있음 그룹의 가운데가 71세 부근, 없음 그룹은 43세 부근이며 두 상자가 겹치는 구간도 넓다" loading="lazy" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--border)">
+    <figcaption>앱의 <b>탐색</b> 화면에 나오는 나이 상자그림입니다. 두 그룹의 가운데가 크게 떨어져 있지만 <b>겹치는 구간도 넓습니다.</b> 여러분의 화면에서 같은 그림을 찾아 기록표를 채웁니다.</figcaption></figure>
+  <p>히스토그램에서 값이 어느 구간에 몰려 있는지 확인합니다. 이어서 상자그림과 평균 표를 참고해 아래 기록표를 채우고, <b>두 그룹의 차이가 두드러지는 속성</b>에 표시합니다.</p>
   <table class="daymap">
-    <thead><tr><th>모델</th><th>답하는 방식</th><th>정확도 (기준 100만, 동일 시험용 66편)</th></tr></thead>
+    <thead><tr><th>비교 대상</th><th>뇌졸중 있음</th><th>뇌졸중 없음</th></tr></thead>
     <tbody>
-      <tr><td><b>로지스틱 회귀</b></td><td>0~1 사이의 성공 확률</td><td><b>0.924</b></td></tr>
-      <tr><td><b>의사결정트리</b></td><td>질문의 순서(규칙)</td><td><b>0.939</b></td></tr>
+      <tr><td>평균 나이</td><td></td><td></td></tr>
+      <tr><td>평균 혈당</td><td></td><td></td></tr>
+      <tr><td>고혈압 비율</td><td></td><td></td></tr>
+      <tr><td>심장병 비율</td><td></td><td></td></tr>
     </tbody>
   </table>
-  <p class="mini">두 모델은 같은 학습용 150편과 시험용 66편을 사용했습니다. 시험용 자료는 학습과 표준화의 기준 계산에서 제외합니다. 표의 수치는 이 자료·분할·설정에서 얻은 값입니다. 다른 분할에서도 비슷한 결과가 나오는지는 별도로 확인해야 합니다.</p>
-  <figure class="interactive" data-fig="twoDials">
-    <div class="widget" data-w="twoDials">
-<svg viewBox="0 0 720 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="위는 실제 관객 수, 아래는 추정 확률. 같은 66편을 두 층에 나란히 놓고 라벨 기준선과 문턱선을 각각 움직이는 그림">
-<!-- 위 = 정답 층: 가로축 누적 관객 수 로그 척도(10^3~10^7.25 → 72~676) -->
-<text x="56" y="32" font-size="15" fill="#6b7385">정답 층 · 가로축 누적 관객 수(명)</text>
-<rect x="56" y="40" width="640" height="92" fill="#b07a00" opacity=".06"/>
-<g font-size="14" fill="#6b7385" text-anchor="middle">
-<text x="72" y="150">1천</text>
-<text x="214.1" y="150">1만</text>
-<text x="356.2" y="150">10만</text>
-<text x="498.4" y="150">100만</text>
-<text x="640.5" y="150">1000만</text>
-</g>
-<g class="dotT"></g>
-<line class="lline" x1="498.4" y1="40" x2="498.4" y2="132" stroke="#b07a00" stroke-width="2.5"/>
-<text class="ltext" x="506.4" y="56" font-size="14" fill="#b07a00">라벨 기준 100만 명</text>
-<!-- 아래 = 예측 층: 가로축 추정 확률 0~1 선형(72~676) -->
-<text x="56" y="188" font-size="15" fill="#6b7385">예측 층 · 가로축 추정 확률(단위 없음)</text>
-<rect x="56" y="196" width="640" height="92" fill="#2b7fd6" opacity=".05"/>
-<rect class="grn" x="374" y="196" width="302" height="92" fill="#2f9e5f" opacity=".10"/>
-<g font-size="14" fill="#6b7385" text-anchor="middle">
-<text x="72" y="306">0</text>
-<text x="223" y="306">0.25</text>
-<text x="374" y="306">0.5</text>
-<text x="525" y="306">0.75</text>
-<text x="676" y="306">1</text>
-</g>
-<g class="dotB"></g>
-<line class="tline" x1="374" y1="196" x2="374" y2="288" stroke="#d64545" stroke-width="2.5"/>
-<text class="ttext" x="382" y="212" font-size="14" fill="#2f9e5f">성공으로 예측</text>
-<g font-size="15" fill="#1c2230">
-<text class="n1" x="56" y="326">전체 216편 중 성공 23편</text>
-<text class="n2" x="249.8" y="326">시험 66편 중 성공 라벨 6편</text>
-<text class="n3" x="461.2" y="326">정확도 0.924</text>
-<text class="n4" x="582.4" y="326">성공으로 예측 1편</text>
-</g>
-</svg>
-<div class="wctl">
-<span>라벨 기준</span>
-<button class="wbtn" type="button" data-th="500000">50만 명</button>
-<button class="wbtn on" type="button" data-th="1000000">100만 명</button>
-<button class="wbtn" type="button" data-th="3000000">300만 명</button>
-<label>문턱값 <input type="range" class="thr" min="0.05" max="0.95" step="0.05" value="0.5"></label>
-</div>
-</div>
-    <figcaption>라벨 기준 3종의 학습 결과는 미리 계산해 저장한 값입니다. 교재 3절 예시 코드와 같은 자료·분할·설정을 사용했습니다.</figcaption>
-  </figure>
+  <p>네 속성 모두 뇌졸중 여부에 따라 차이가 나타나므로 모델의 입력 후보로 삼을 수 있습니다. 다만 <b>그룹의 평균이나 비율이 다르다는 것</b>과 <b>한 사람의 뇌졸중 여부를 정확히 예측한다는 것</b>은 다릅니다. 예측에 얼마나 도움이 되는지는 모델을 만들어 평가해야 알 수 있습니다.</p>
 
-  <div class="callout warn">
-    <div class="h">⚠️ 발견 — 기준선을 움직이면 모델이 흔들린다</div>
-    <p>성공 기준선을 100만에서 300만으로 바꾸어 다시 학습시키면, 성공 라벨이 붙는 영화의 수가 달라지고 정확도도 함께 달라집니다. 모델의 종류는 같지만 <b>사람이 정한 기준 하나가 결과를 바꾼 것</b>입니다. 라벨 기준도 판단이며, 모델의 성능은 그 판단 위에 있습니다.</p>
-  </div>
-  <figure class="interactive" data-fig="labelcurve">
-    <div class="widget" data-w="labelcurve">
-  <svg viewBox="0 0 720 252" role="img" aria-label="성공 기준 열 지점의 두 모델 정확도 꺾은선과 시험용 성공 라벨 편수 막대. 기준을 올릴수록 정확도는 오르고 성공 라벨은 줄어드는 엇갈림">
-    <g stroke="#e3ddcf" stroke-width="1" stroke-dasharray="4 4">
-      <line x1="84" y1="186" x2="624" y2="186"/>
-      <line x1="84" y1="125" x2="624" y2="125"/>
-      <line x1="84" y1="64" x2="624" y2="64"/>
-    </g>
-    <g font-size="14" text-anchor="end" fill="#6b7385">
-      <text x="68" y="191">0.70</text>
-      <text x="68" y="130">0.85</text>
-      <text x="68" y="69">1.00</text>
-    </g>
-    <line class="sel" x1="384" y1="60" x2="384" y2="226" stroke="#d64545" stroke-width="1.5" stroke-dasharray="5 4"/>
-    <g class="bars"></g>
-    <g class="curves"></g>
-    <g font-size="14" text-anchor="middle" fill="#6b7385">
-      <text x="84" y="246">10만</text>
-      <text x="144" y="246">20만</text>
-      <text x="204" y="246">30만</text>
-      <text x="264" y="246">50만</text>
-      <text x="324" y="246">70만</text>
-      <text x="384" y="246">100만</text>
-      <text x="444" y="246">150만</text>
-      <text x="504" y="246">200만</text>
-      <text x="564" y="246">300만</text>
-      <text x="624" y="246">500만</text>
-    </g>
-    <text class="read" x="56" y="26" text-anchor="start" font-size="15" font-weight="800" fill="#1c2230">기준 100만 명 · 로지스틱 0.924 · 트리 0.939 · <tspan class="readk" fill="#1c2230">시험용 성공 라벨 6편</tspan></text>
-    <g font-size="14" fill="#6b7385">
-      <circle cx="493.5" cy="22" r="4.5" fill="#2b7fd6"/>
-      <text x="503" y="26">로지스틱 회귀</text>
-      <circle cx="600" cy="22" r="4.5" fill="#b07a00"/>
-      <text x="609.5" y="26">의사결정트리</text>
-      <rect x="489" y="38" width="12" height="12" fill="#b9b3a5"/>
-      <text x="507" y="48">시험용 성공 라벨 편수</text>
-    </g>
-    <g class="hits"></g>
-  </svg>
-  <div class="wctl">
-    <button class="wbtn" type="button" data-d="-1">◀ 낮은 기준</button>
-    <button class="wbtn" type="button" data-d="1">높은 기준 ▶</button>
-  </div>
-</div>
-    <figcaption>기준을 올릴수록 정확도는 대체로 오르지만, 20만 명에서는 오히려 내려갑니다. 같은 구간에서 시험용 66편에 남은 성공 라벨은 15편에서 1편으로 줄어듭니다. 회색 막대가 그 편수입니다.</figcaption>
-  </figure>
+  <p>체질량지수 값이 비어 있는 사람들만 따로 집계한 표를 확인합니다. 이 그룹의 뇌졸중 비율은 전체 데이터의 뇌졸중 비율보다 몇 배 높거나 낮은가요? <b>________ 배</b></p>
+  <p>이 값이 1배에서 크게 벗어난다면, 체질량지수가 비어 있는 그룹이 전체와 다른 특성을 지녔을 가능성이 있습니다. <b>값이 비어 있다는 사실 자체도 정보</b>가 될 수 있습니다.</p>
+  <p>흡연 상태 열에는 빈칸이 없지만, <code>Unknown</code>, 즉 ‘알 수 없음’이라는 값이 들어 있습니다. 빈칸만 세어서는 이런 값을 찾을 수 없습니다. <b>정보가 없다는 사실이 문자로 기록되기도 합니다.</b> 이런 값을 어떻게 다룰지는 다음 시간에 판단합니다.</p>
 
-  <p>이 과정 전체는 교과서 116쪽 탐구활동의 스팸 메일 예측 모델을 만드는 과정과 같은 뼈대입니다. 폼 Ⅲ-01b에서 우리 실습을 그 단계에 맞춰 봅니다. 시간이 남으면 폼 Ⅲ-02e(교과서 142쪽 탐구활동 '데이터로 예측하기')에 내 분류기의 예측 하나를 기록합니다.</p>
-  <details class="glossary">
-    <summary>📖 대응표 펼쳐 보기 — 폼을 먼저 써 본 뒤 확인하세요</summary>
+  <h2>3. 회귀에서 분류로</h2>
+  <p>7차시의 회귀 모델은 누적 관객 수라는 숫자를 예측했습니다. 이번에 예측할 답은 뇌졸중을 겪었는지 아닌지, 두 가지 <b>범주</b>입니다.</p>
   <table class="daymap">
-    <thead><tr><th>단계 (교과서 116쪽)</th><th>스팸 예측이라면</th><th>오늘 우리가 한 일</th></tr></thead>
+    <thead><tr><th></th><th>7차시 회귀</th><th>11차시 분류</th></tr></thead>
     <tbody>
-      <tr><td><b>데이터 전처리</b></td><td>스팸을 나타내는 속성 선택 · 훈련/테스트 분리</td><td>관객 수 기준으로 라벨을 만들고, 입력의 수집 시점을 확인함</td></tr>
-      <tr><td><b>모델 학습</b></td><td>예측에 적합한 알고리즘 선택</td><td>로지스틱 회귀와 의사결정트리에 같은 문제를 맡김</td></tr>
-      <tr><td><b>모델 평가</b></td><td>올바르게 예측했는지 지표로 확인</td><td>정확도 확인 — 이 지표로 충분한지는 다음 시간의 질문</td></tr>
+      <tr><td><b>맞힐 답</b></td><td>숫자(누적 관객 수)</td><td>둘 중 하나(뇌졸중이다 · 아니다)</td></tr>
+      <tr><td><b>모델이 내놓는 것</b></td><td>숫자 하나</td><td><b>범주</b> 하나</td></tr>
+      <tr><td><b>점수</b></td><td>예측이 실제와 얼마나 떨어졌는가</td><td>몇 명을 맞혔는가</td></tr>
+      <tr><td><b>나머지</b></td><td colspan="2">데이터 불러오기 · 훈련용과 테스트용 나누기는 <b>모두 같습니다</b></td></tr>
     </tbody>
   </table>
-  </details>
 
-    <h2>5. 도전 — 모델은 무엇을 보고 맞혔나</h2>
-  <p>학습한 의사결정트리의 특성 중요도를 확인합니다. 이 설정에서는 첫 관측일 스크린 수가 0.476, 상영 횟수가 0.277입니다. 나머지 중요도는 판타지·드라마 장르에 배분되었습니다. 각 값은 이 트리 안에서 상대적인 기여를 나타냅니다.</p>
-  <div class="codewrap improve"><span class="label">도전 프롬프트</span><button class="copy-btn">복사</button><pre>의사결정트리에서 어떤 입력이 분류에 기여했는지 확인하고 싶어.
-- 의사결정트리의 특성 중요도를 큰 순서로 표로 보여 줘. 0인 것은 빼 줘.</pre></div>
-  <details class="sample"><summary>선생님이 실행해 확인한 예시 코드</summary><p class="mini">앞 코드 끝에 이어 붙입니다</p><div class="codewrap code"><span class="label">main.py에 이어 붙일 부분</span><pre># 도전 — 모델은 무엇을 보고 맞혔나 (앞 코드 끝에 이어 붙일 부분)
-st.subheader("도전 — 모델은 무엇을 보고 맞혔나")
-중요도 = pd.Series(tree.feature_importances_, index=X.columns)
-중요도 = 중요도[중요도 &gt; 0].sort_values(ascending=False).round(3).reset_index()
-중요도.columns = ["변수", "중요도"]
-st.dataframe(중요도, hide_index=True)
-st.caption("중요도는 이 모델이 무엇을 단서로 삼았는지를 보여 줄 뿐, 그것이 원인이라는 뜻은 아닙니다.")</pre></div></details>
+  <div class="tbquote">
+    <div class="h">📖 교과서의 정의 <span class="src">『데이터 과학』 135·136쪽</span></div>
+    <p class="q">"로지스틱 회귀는 선형 회귀 모델을 로지스틱 함수와 결합하여 각 범주에 해당할 확률을 바탕으로 분류하는 방법이다." <span class="src">(135쪽)</span></p>
+    <p class="q">"… 출력값이 0.5보다 크면 양성, 작으면 음성으로 분류한다." <span class="src">(136쪽)</span></p>
+    <p class="t">→ 이 교재는 이 모델을 <b>확률로 답하는 모델</b>이라고도 부릅니다. 둘은 같은 것을 가리킵니다.</p>
+  </div>
+  <p>로지스틱 회귀는 <b>각 입력값에 중요도를 반영해 하나의 점수</b>로 만든 뒤, 이를 <b>0과 1 사이의 확률</b>로 바꿉니다. 이 수업에서는 0.5를 분류 기준으로 사용합니다. 0.5는 모델이 정한 값이 아니라 우리가 정한 기준이며, 실제 문제에서는 다른 값으로 정하기도 합니다. 계산한 확률이 0.5보다 크면 뇌졸중, 작으면 뇌졸중 아님으로 예측합니다.</p>
+
+  <div class="tbquote">
+    <div class="h">📖 교과서의 정의 <span class="src">『데이터 과학』 220쪽(부록)</span></div>
+    <p class="q">"의사결정트리는 규칙을 만족하는지 아닌지에 따라 대상을 분류하는 모델로, 스무고개 놀이에 비유할 수 있다." <span class="src">(220쪽)</span></p>
+    <p class="t">→ 이 교재는 이 모델을 <b>질문으로 답하는 모델</b>이라고도 부릅니다.</p>
+  </div>
+  <p>의사결정트리는 <b>질문에 대한 답을 따라가며</b> 범주를 정합니다. ‘나이가 몇 살을 넘는가?’, ‘혈당이 얼마를 넘는가?’와 같은 질문으로 데이터를 나누며, 나누는 기준은 학습 과정에서 정해집니다. 마지막에 남은 그룹의 <b>다수 범주</b>가 그 사람의 예측 결과가 됩니다.</p>
   <table class="daymap">
-    <thead><tr><th>변수</th><th>중요도 (트리, 깊이 3)</th></tr></thead>
+    <thead><tr><th></th><th>로지스틱 회귀<br><span class="mini">확률로 답하는 모델</span></th><th>의사결정트리<br><span class="mini">질문으로 답하는 모델</span></th></tr></thead>
     <tbody>
-      <tr><td><b>첫 관측일 스크린 수</b></td><td><b>0.476</b></td></tr>
-      <tr><td>첫 관측일 상영 횟수</td><td>0.277</td></tr>
-      <tr><td>장르 · 판타지</td><td>0.131</td></tr>
-      <tr><td>장르 · 드라마</td><td>0.116</td></tr>
+      <tr><td>읽는 데이터</td><td colspan="2">같습니다</td></tr>
+      <tr><td>사용하는 입력</td><td colspan="2">나이 · 평균 혈당 · 고혈압 · 심장병</td></tr>
+      <tr><td>테스트 데이터</td><td colspan="2">같습니다</td></tr>
+      <tr><td><b>답을 내는 방법(알고리즘)</b></td><td>확률과 기준값</td><td>질문의 순서</td></tr>
+      <tr><td>규칙이 눈에 보이는가</td><td>수치로만 확인</td><td>질문으로 드러남</td></tr>
     </tbody>
   </table>
-  <div class="callout warn">
-    <div class="h">⚠️ 영향력은 원인이 아니다</div>
-    <p>특성 중요도는 현재 자료·모델·설정에 따른 값입니다. 관련된 변수가 함께 있거나 학습 자료가 바뀌면 중요도의 분배도 달라질 수 있습니다. 스크린을 많이 확보해서 관객이 늘었는지, 흥행을 기대해서 스크린을 많이 배정했는지는 이 값만으로 구분할 수 없습니다. <b>특성 중요도는 인과관계의 증거가 아닙니다.</b></p>
-  </div>
+  <p>두 모델은 같은 데이터를 읽고 같은 입력을 보며 같은 사람들로 채점받습니다. <b>우리가 다르게 정한 것은 답을 내는 방법, 곧 알고리즘 하나뿐입니다.</b> 규칙이 눈에 보이는지도 여기서 나뉩니다. 따라서 두 모델의 점수가 다르게 나온다면, 그 차이는 데이터가 아니라 알고리즘에서 비롯된 것입니다.</p>
 
-  <details class="glossary"><summary>더 알아보기 — 실제 사례 · 타이타닉 생존 트리와 질문의 순서</summary><div class="gin">
-  <h3>타이타닉 생존 트리와 질문의 순서</h3>
-  <p>1912년 4월 15일 침몰한 타이타닉호에는 2,200명이 넘게 타고 있었고 생존자는 약 710명입니다. 승객 기록의 성별, 나이, 동승한 형제자매와 배우자 수로 의사결정트리를 학습시키면 모델은 성별을 가장 먼저 묻습니다. 그림의 낱말은 모두 영문이며 아래 표에서 우리말로 대조합니다.</p>
+  <h2>4. 분류 모델 만들고 평가하기</h2>
+  <p>첫 분류 모델의 입력으로는 <b>나이 · 평균 혈당 · 고혈압 · 심장병</b>을 사용합니다. 2절에서 두 그룹의 차이를 확인했고, 빈 값도 없는 네 속성입니다. 다른 속성은 다음 이유로 이번 입력에서 제외합니다.</p>
+  <ul class="steps">
+    <li><b>성별 · 거주 지역</b> — 성별과 사는 곳으로 사람을 나누면 편향이 생깁니다. 오늘은 넣지 않습니다.</li>
+    <li><b>결혼 경험 · 직업 형태</b> — 결혼한 적이 있는 사람은 대체로 나이가 많습니다. 나이를 이미 넣었으므로 같은 것을 두 번 넣지 않습니다.</li>
+    <li><b>체질량지수</b> — 값이 비어 있는 기록이 있습니다. 빈 값을 어떻게 처리할지는 다음 시간에 판단합니다.</li>
+    <li><b>흡연 상태</b> — ‘알 수 없음’으로 기록된 값이 많습니다. 이번에는 분포를 확인하고 입력에서는 제외합니다.</li>
+  </ul>
+
+  <div class="callout theory">
+    <div class="h">🔎 입력 점검 — 예측하는 시점에 알 수 있는 값인가</div>
+    <p>예를 들어 <code>재활치료_횟수</code>처럼 뇌졸중 뒤에 생기는 값을 입력에 넣으면 정확도는 거의 1.0까지 올라갈 수 있습니다. 하지만 모델이 좋아진 것이 아닙니다. <b>정답을 알고 난 뒤의 정보가 입력에 섞인 것</b>입니다. 입력은 반드시 예측하는 시점에 알 수 있는 값이어야 합니다.</p>
+  </div>
+  <p>데이터를 <b>훈련용과 테스트용</b>으로 나눕니다. 번호 순으로 정렬한 뒤 열 명씩 묶어, 각 묶음의 앞 세 명을 테스트용으로 남겨 둡니다. 전체의 30%인 1,533명이며, 나머지 3,577명으로만 학습합니다. 테스트 데이터는 학습에 사용하지 않습니다. 나이와 혈당의 크기를 맞출 때도 <b>훈련용 데이터에서 구한 값만</b> 사용합니다.</p>
+  <p>비교 대상으로 <b>입력을 보지 않고, 훈련용 데이터에서 사람이 더 많은 범주로만 예측하는 모델</b>도 만듭니다. 이 모델을 기준으로 삼아, 학습한 두 모델이 얼마나 다른 결과를 내는지 확인합니다.</p>
+  <p>먼저 네 속성을 기본 입력으로 사용해 <b>세 모델의 정확도</b>를 기록합니다. 그다음 입력 속성을 바꾸면서 정확도가 어떻게 달라지는지 비교합니다.</p>
+
+  <h3>실습 ③ — 분류 모델 화면 만들기</h3>
+  <ol class="steps">
+<li><span class="st">① 샘플 프롬프트 — 그대로 붙여 넣기</span>
+  <div class="codewrap prompt"><span class="label">① 프롬프트</span><button class="copy-btn">복사</button><pre>pages 폴더에 '분류 모델' 페이지를 추가해 줘. 파일 이름은 2_분류_모델.py.
+바뀐 파일 전체를 다시 줘. 바뀐 부분만 주지 말고.
+stroke가 1이면 뇌졸중, 0이면 아님이야. 뇌졸중을 양성으로 둬.
+age, avg_glucose_level, bmi, hypertension, heart_disease 다섯 가운데
+입력으로 사용할 속성을 화면에서 고르게 하고, 처음에는 체질량지수(bmi)를 뺀 넷이 골라져 있게 해 줘.
+고르는 목록과 가로축·세로축 이름에는 열 이름 대신 나이·평균 혈당·체질량지수·고혈압·심장병처럼 우리말 이름을 보여 줘.
+두 개보다 적게 고르면 안내문을 표시하고 멈춰 줘.
+체질량지수(bmi)는 비어 있는 사람이 있으니 고른 경우에만 훈련용의 중앙값으로 채워 줘.
+번호 순으로 정렬한 뒤 열 명씩 묶어, 각 묶음의 앞 세 명을 테스트용으로 고정해 줘.
+나머지 일곱 명으로만 학습과 크기 맞추기를 해 줘. 테스트용은 1,533명이 돼.
+로지스틱 회귀 모델과 의사결정트리 모델을 각각 만들어 줘.
+화면에 모델 이름을 적을 때는 로지스틱 회귀(확률로 답하는 모델),
+의사결정트리(질문으로 답하는 모델)처럼 교과서의 이름을 앞에 적어 줘.
+의사결정트리 모델은 질문을 세 번까지만 던지게 하고,
+마지막 마디에 사람이 다섯 명 미만이면 더 나누지 말고, 난수를 고정해 줘.
+두 모델의 정확도를 큰 숫자 카드로 보여 줘. 카드에는 테스트 데이터의 정확도를 크게 적고,
+그 아래에 훈련 데이터의 정확도와 테스트 데이터의 정확도를 나란히 작게 적어 줘.
+같은 자리에 "입력을 하나도 보지 않고 훈련용에서 많은 쪽으로만 답하는 모델"의
+정확도도 같은 방식으로 카드에 보여 줘.
+고른 속성 가운데 둘을 골라 가로축과 세로축으로 삼는 그림을 그려 줘.
+테스트 데이터를 점으로 찍고 실제 뇌졸중 여부를 색으로 나눠 범례를 달아 줘.
+위에서 채점한 그 확률 모델이 0.5로 가르는 선을 그려 줘.
+두 축이 아닌 속성은 테스트 데이터의 중앙값에 세워 두고 계산하고, 어느 값에 세웠는지 글로 적어 줘.
+선이 그림 밖이면 그렇다고 글로 적어 줘.
+의사결정트리 모델이 그 그림을 나눈 칸도 옅은 색으로 칠해 줘.
+의사결정트리 모델이 던진 질문을 가지가 갈라지는 그림으로 그려 줘.
+마디마다 그 자리에 온 훈련용 사람 수와 그중 실제 뇌졸중인 사람 수, 그 비율을 함께 적어 줘.
+가지에는 예와 아니요를 붙이고, 더 묻지 않고 답을 내는 마디는 답에 따라 색을 달리해 줘.
+그 아래에 답을 내는 마디가 모두 몇 칸이고 그중 몇 칸이 아님이라고 답하는지,
+고른 속성 가운데 이 나무가 실제로 물은 것은 무엇인지 한 줄씩 적어 줘.
+산점도는 plotly로 그려 줘. 가지 그림은 st.graphviz_chart에 DOT 문자열을 넘겨서 그려 줘.
+이 방법은 스트림릿에 들어 있어 graphviz 패키지를 설치하지 않아도 되니, requirements.txt는 그대로 두면 돼.</pre></div>
+  <details class="sample"><summary>선생님이 실행해 확인한 예시 코드</summary><p class="mini">pages 폴더 안에 저장합니다. 데이터는 고정되어 있으므로 화면의 숫자는 언제 실행해도 같습니다. 다만 라이브러리 버전이나 설정을 바꾸면 값이 달라질 수 있습니다.</p>
+  <div class="codewrap code"><span class="label">② AI가 준 코드 예시 — <button type="button" class="fname">pages/2_분류_모델.py</button></span><button class="copy-btn">복사</button><pre># pages/2_분류_모델.py — 속성을 골라 두 모델을 학습하고, 두 축으로 자른 자리를 그림으로 본다
+import pandas as pd
+import plotly.graph_objects as go
+import streamlit as st
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
+
+st.set_page_config(page_title="분류 모델", page_icon="🤖", layout="wide")
+st.title("🤖 분류 모델")
+st.write("뇌졸중을 겪었는지 아닌지를 맞히는 모델 두 개를 만들고, 훈련 데이터와 테스트 데이터에서 정확도를 봅니다.")
+
+데이터주소 = "https://raw.githubusercontent.com/greatsong/modudata/main/data/stroke.csv"
+고를수있는열 = ["age", "avg_glucose_level", "bmi", "hypertension", "heart_disease"]
+기본열 = ["age", "avg_glucose_level", "hypertension", "heart_disease"]
+입력이름 = {"age": "나이", "avg_glucose_level": "평균 혈당", "bmi": "체질량지수",
+            "hypertension": "고혈압", "heart_disease": "심장병"}
+칸수 = 60
+칸색 = ["#e2e8f0", "#fef3c7", "#dbeafe", "#dcfce7", "#fae8ff", "#ffe4e6", "#ede9fe", "#f8fafc"]
+
+
+@st.cache_data
+def 데이터_읽기():
+    """번호 순으로 정렬해 둔다. 나누는 자리가 늘 같아야 점수를 비교할 수 있다."""
+    return pd.read_csv(데이터주소, encoding="utf-8").sort_values("id").reset_index(drop=True)
+
+
+정식이름 = {"확률로 답하는 모델": "로지스틱 회귀", "질문으로 답하는 모델": "의사결정트리"}
+
+
+def 병기(이름):
+    """교과서의 정식 이름을 앞에 두고 교재에서 쓰는 이름을 괄호로 붙인다."""
+    return f"{정식이름[이름]}({이름})" if 이름 in 정식이름 else 이름
+
+
+def 우리말(열):
+    return 입력이름[열]
+
+
+df = 데이터_읽기()
+고른열 = st.multiselect("입력으로 사용할 속성", 고를수있는열, default=기본열, format_func=우리말)
+입력열 = [열 for 열 in 고를수있는열 if 열 in 고른열]   # 고른 차례와 상관없이 늘 같은 순서로 둔다
+if len(입력열) &lt; 2:
+    st.warning("속성을 두 개 이상 골라 주세요. 하나만으로는 그림의 두 축을 만들 수 없습니다.")
+    st.stop()
+
+테스트용 = pd.Series(df.index % 10 &lt; 3, index=df.index)   # 열 명씩 묶어 각 묶음의 앞 세 명이 테스트용
+X = df[입력열].copy()
+y = df["stroke"]                                        # 1이면 뇌졸중, 0이면 아님. 뇌졸중이 양성이다
+if "bmi" in 입력열 and X["bmi"].isna().any():
+    중앙값 = float(X.loc[~테스트용, "bmi"].median())
+    X["bmi"] = X["bmi"].fillna(중앙값)
+    st.warning(f"체질량지수가 비어 있는 사람은 훈련용의 중앙값 {중앙값:.1f}으로 채웠습니다.")
+
+
+def 학습(열들):
+    """고른 열로 두 모델을 학습해 돌려준다. 설정은 늘 같다."""
+    훈련 = X.loc[~테스트용, 열들]
+    크기맞추기 = StandardScaler().fit(훈련)   # 크기 맞추기도 훈련용으로만 한다
+    확률모델 = LogisticRegression(max_iter=2000).fit(크기맞추기.transform(훈련), y[~테스트용])
+    # 질문으로 답하는 모델은 값의 크기에 영향받지 않으므로 크기를 맞추지 않은 값을 그대로 사용한다
+    질문모델 = DecisionTreeClassifier(max_depth=3, min_samples_leaf=5, random_state=0).fit(훈련, y[~테스트용])
+    return 크기맞추기, 확률모델, 질문모델
+
+
+크기맞추기, 확률모델, 질문모델 = 학습(입력열)
+많은쪽 = int(y[~테스트용].mode()[0])                       # 훈련용에서 사람이 많은 범주
+실제 = y[테스트용].to_numpy()
+
+st.info(f"훈련용 {int((~테스트용).sum()):,}명(그중 뇌졸중 {int(y[~테스트용].sum()):,}명)으로 학습하고, "
+        f"테스트용 {int(테스트용.sum()):,}명(그중 실제 뇌졸중 {int(실제.sum()):,}명)으로 채점합니다.")
+
+st.subheader("훈련 데이터와 테스트 데이터에서의 정확도")
+훈련답 = y[~테스트용].to_numpy()
+예측 = {"확률로 답하는 모델": 확률모델.predict(크기맞추기.transform(X[테스트용])),
+        "질문으로 답하는 모델": 질문모델.predict(X[테스트용]),
+        "한쪽으로만 답하는 모델": pd.Series(많은쪽, index=y[테스트용].index).to_numpy()}
+훈련예측 = {"확률로 답하는 모델": 확률모델.predict(크기맞추기.transform(X[~테스트용])),
+            "질문으로 답하는 모델": 질문모델.predict(X[~테스트용]),
+            "한쪽으로만 답하는 모델": pd.Series(많은쪽, index=y[~테스트용].index).to_numpy()}
+칸들 = st.columns(3)
+for 칸, (이름, 예측값) in zip(칸들, 예측.items()):
+    칸.metric(병기(이름), f"{(예측값 == 실제).mean():.4f}")
+    칸.caption(f"훈련용 {(훈련예측[이름] == 훈련답).mean():.4f} · 테스트용 {(예측값 == 실제).mean():.4f}")
+st.caption("큰 숫자가 테스트 데이터의 정확도입니다. 소수 넷째 자리까지 적었습니다. 맨 오른쪽은 입력을 하나도 "
+           "보지 않고 훈련용에서 사람이 많은 쪽으로만 답하는 모델입니다. 테스트용 세 값을 교재의 표에 적어 두세요.")
+
+st.subheader("고른 속성 가운데 둘을 축으로 놓고 본다")
+축칸 = st.columns(2)
+가로 = 축칸[0].selectbox("가로축", 입력열, index=0, format_func=우리말)
+세로후보 = [열 for 열 in 입력열 if 열 != 가로]
+세로 = 축칸[1].selectbox("세로축", 세로후보, index=0, format_func=우리말)
+
+채점입력 = X[테스트용]
+# 두 축이 아닌 속성은 테스트 데이터의 중앙값에 세워 둔다. 위에서 채점한 그 모델을 그대로 그린다
+고정값 = {열: float(채점입력[열].median()) for 열 in 입력열 if 열 not in (가로, 세로)}
+
+
+def 눈금(열):
+    """테스트용에서 가장 작은 값부터 가장 큰 값까지 고르게 나눈 값들을 돌려준다."""
+    작은값, 큰값 = float(채점입력[열].min()), float(채점입력[열].max())
+    큰값 = 큰값 if 큰값 &gt; 작은값 else 작은값 + 1.0
+    return [작은값 + (큰값 - 작은값) * i / (칸수 - 1) for i in range(칸수)]
+
+
+def 두줄로(값들):   # 한 줄로 늘어선 값을 세로줄마다 잘라 표 모양으로 만든다
+    return [값들[i * 칸수:(i + 1) * 칸수] for i in range(칸수)]
+
+
+가로눈금, 세로눈금 = 눈금(가로), 눈금(세로)
+격자 = pd.DataFrame([dict(고정값, **{가로: 가, 세로: 세}) for 세 in 세로눈금 for 가 in 가로눈금])[입력열]
+확률격자 = 확률모델.predict_proba(크기맞추기.transform(격자))[:, 1].tolist()
+마디번호 = 질문모델.apply(격자).tolist()              # 각 자리가 나무의 어느 마디에 떨어지는지
+자리 = {마디: 번호 for 번호, 마디 in enumerate(sorted(set(마디번호)))}
+마디수 = len(자리)
+색단계 = [[(번호 + 끝) / 마디수, 칸색[번호 % len(칸색)]] for 번호 in range(마디수) for 끝 in (0, 1)]
+
+그림 = go.Figure()
+그림.add_trace(go.Heatmap(x=가로눈금, y=세로눈금, z=두줄로([자리[마디] for 마디 in 마디번호]),
+                          colorscale=색단계, zmin=-0.5, zmax=마디수 - 0.5, opacity=0.45,
+                          showscale=False, hoverinfo="skip"))
+그림.add_trace(go.Contour(x=가로눈금, y=세로눈금, z=두줄로(확률격자),
+                          contours=dict(coloring="lines", start=0.5, end=0.5, size=1),
+                          line=dict(width=3, color="#2563eb"), showscale=False, hoverinfo="skip"))
+점표 = pd.DataFrame({"가로": 채점입력[가로].to_numpy(), "세로": 채점입력[세로].to_numpy(),
+                     "실제": pd.Series(실제).map({1: "뇌졸중 있음", 0: "뇌졸중 없음"}).to_numpy()})
+for 이름, 색 in (("뇌졸중 없음", "#94a3b8"), ("뇌졸중 있음", "#7f1d1d")):
+    한그룹 = 점표[점표["실제"] == 이름]
+    그림.add_trace(go.Scatter(x=한그룹["가로"], y=한그룹["세로"], mode="markers", name=이름,
+                              marker=dict(size=6, color=색, opacity=0.5)))
+그림.update_layout(title=f"가로축 {우리말(가로)} · 세로축 {우리말(세로)}", xaxis_title=우리말(가로),
+                   yaxis_title=우리말(세로), height=560)
+st.plotly_chart(그림, width="stretch")
+if not (min(확률격자) &lt;= 0.5 &lt;= max(확률격자)):
+    st.info(f"이 그림 안에서 확률이 가장 높은 자리도 {max(확률격자):.2f}입니다. "
+            f"이 그림에서는 0.5 경계선이 보이지 않습니다.")
+고정설명 = " · ".join(f"{우리말(열)} {값:g}" for 열, 값 in 고정값.items())
+st.caption(f"점은 테스트 데이터이고 색은 실제 뇌졸중 여부입니다. 파란 선은 {병기('확률로 답하는 모델')}이 0.5로 가르는 자리, "
+           f"옅은 색으로 나뉜 바탕은 {병기('질문으로 답하는 모델')}이 두 축을 나눈 칸입니다. 위에서 채점한 그 모델을 그렸습니다."
+           + (f" 두 축이 아닌 속성은 테스트 데이터의 중앙값({고정설명})으로 고정해 계산했습니다." if 고정값 else ""))
+
+st.subheader(f"{병기('질문으로 답하는 모델')}은 어떤 순서로 물었는가")
+
+
+def 가지그림(모델, 열들):
+    """학습한 나무를 가지가 갈라지는 그림으로 그린다.
+
+    마디마다 그 자리에 온 훈련용 사람 수와 그중 실제 뇌졸중인 사람 수를 함께 적는다.
+    더 묻지 않고 답을 내는 마디는 답에 따라 색을 달리한다.
+    """
+    나무 = 모델.tree_
+    훈련 = X.loc[~테스트용, 열들]
+    지난자리 = 모델.decision_path(훈련).toarray()      # 사람마다 지나간 마디에 1이 선다
+    온사람 = 지난자리.sum(axis=0)
+    뇌졸중 = 지난자리[y[~테스트용].to_numpy() == 1].sum(axis=0)
+
+    줄 = ['digraph {', 'graph [ranksep=0.45 nodesep=0.28];',
+          'node [shape=box style="filled,rounded" fontname="sans-serif" fontsize=13 '
+          'color="#cbd5e1" penwidth=1.2 margin="0.18,0.10"];',
+          'edge [fontname="sans-serif" fontsize=12 color="#94a3b8" fontcolor="#64748b"];']
+    for 마디 in range(나무.node_count):
+        인원 = int(온사람[마디])
+        환자 = int(뇌졸중[마디])
+        아래줄 = f"{인원:,}명\\n뇌졸중 {환자:,}명 · {환자 / 인원 * 100:.1f}%"
+        if 나무.children_left[마디] == -1:              # 더 묻지 않고 답을 내는 마디
+            답 = int(나무.value[마디][0].argmax())
+            윗줄 = "답: 뇌졸중" if 답 else "답: 아님"
+            칸색, 글자색 = ("#fecaca", "#7f1d1d") if 답 else ("#e2e8f0", "#334155")
+        else:
+            윗줄 = f"{입력이름[열들[나무.feature[마디]]]} ≤ {나무.threshold[마디]:.1f} ?"
+            칸색, 글자색 = "#ffffff", "#1e293b"
+        줄.append(f'{마디} [label="{윗줄}\n{아래줄}" fillcolor="{칸색}" fontcolor="{글자색}"];')
+        for 자식, 딱지 in ((나무.children_left[마디], "예"), (나무.children_right[마디], "아니요")):
+            if 자식 != -1:
+                줄.append(f'{마디} -&gt; {자식} [label=" {딱지} "];')
+    return "\n".join(줄) + "\n}"
+
+
+st.graphviz_chart(가지그림(질문모델, 입력열))
+
+마지막마디 = [마디 for 마디 in range(질문모델.tree_.node_count)
+              if 질문모델.tree_.children_left[마디] == -1]
+아님마디 = sum(1 for 마디 in 마지막마디 if int(질문모델.tree_.value[마디][0].argmax()) == 0)
+물은속성 = sorted({입력이름[입력열[열]] for 열 in 질문모델.tree_.feature if 열 &gt;= 0})
+st.caption(f"맨 위가 첫 질문입니다. 예라고 답하면 왼쪽, 아니요라고 답하면 오른쪽으로 내려갑니다. "
+           f"색이 칠해진 마디가 더 묻지 않고 답을 내는 자리이고, 모두 {len(마지막마디)}개입니다. "
+           f"그중 {아님마디}개가 아님이라고 답합니다.")
+st.caption(f"고른 속성은 {len(입력열)}가지였지만 이 나무가 실제로 물은 것은 "
+           f"{' · '.join(물은속성)} {len(물은속성)}가지입니다.")</pre></div></details>
+    </li>
+  </ol>
+
+  <h3>화면 읽기 — 세 모델의 정확도 비교하기</h3>
+  <p>화면 상단의 카드에서 세 모델의 정확도를 확인해 아래 표에 옮겨 적습니다. <b>정확도는 테스트 데이터에서 뇌졸중 여부를 맞힌 비율</b>입니다.</p>
   <table class="daymap">
-    <thead><tr><th>질문 순서</th><th>그림의 영문 낱말</th><th>읽어 낸 값</th></tr></thead>
+    <thead><tr><th>모델</th><th>답하는 방식</th><th>내 앱의 정확도</th></tr></thead>
     <tbody>
-      <tr><td><b>첫 질문</b></td><td>성별(gender)</td><td>여성 승객의 생존 확률 0.73, 전체의 36%</td></tr>
-      <tr><td><b>두 번째 질문</b></td><td>나이 9.5세(age)</td><td>그보다 나이가 많은 남성 승객은 전체의 61%, 생존 확률 0.17</td></tr>
-      <tr><td><b>세 번째 질문</b></td><td>동승한 형제자매·배우자 수 3명(sibsp)</td><td>각 끝마디는 전체의 2%, 생존 확률 0.02와 0.89</td></tr>
+      <tr><td>로지스틱 회귀<br><span class="mini">확률로 답하는 모델</span></td><td>0부터 1 사이의 확률</td><td></td></tr>
+      <tr><td>의사결정트리<br><span class="mini">질문으로 답하는 모델</span></td><td>질문의 순서(규칙)</td><td></td></tr>
+      <tr><td>한쪽으로만 답하는 모델</td><td>입력을 보지 않고 훈련용에서 많은 쪽</td><td></td></tr>
     </tbody>
   </table>
-  <figure class="case" style="margin:14px 0 6px">
-    <img src="img/lesson09_case2.jpg" alt="타이타닉 승객의 생존을 예측하는 의사결정트리. 맨 위 마디는 성별, 그 아래는 나이 9.5세, 그 아래는 동승한 형제자매·배우자 수 3명으로 갈라지며 끝마디마다 생존 확률과 해당 마디의 비율이 적혀 있다" style="width:100%;height:auto">
-    <figcaption style="margin-top:6px;font-size:.84rem;color:var(--text-soft)">그림은 위키백과 'Decision tree learning'의 타이타닉 생존 트리(Gilgoldm, 2020, CC BY-SA 4.0) · 끝마디의 두 숫자는 생존 확률과 해당 마디의 비율</figcaption>
-  </figure>
-  <p>트리가 성별을 첫 질문으로 고른 것은 구조 순서가 자료에 남아 있기 때문이며 성별이 생존의 원인임을 밝힌 결과가 아닙니다. 특성 중요도와 인과를 구분하는 5절의 논점과 이어집니다.</p>
-  <p class="mini">출처: <a href="https://en.wikipedia.org/wiki/Decision_tree_learning" target="_blank" rel="noopener">위키백과 · Decision tree learning</a></p>
-  </div></details>
+  <figure class="case" style="margin:12px 0 10px"><img src="img/lesson11_app_boundary.png" alt="나이와 평균 혈당 평면 위의 산점도. 옅은 색 직사각형이 질문으로 답하는 모델이 나눈 영역이고 붉은 점이 뇌졸중을 겪은 사람이다" loading="lazy" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--border)">
+    <figcaption>앱의 <b>분류 모델</b> 화면입니다. 옅은 색 칸은 <b>질문으로 답하는 모델</b>이 나눈 영역이고, 붉은 점이 뇌졸중을 겪은 사람입니다. 화면의 축을 바꾸면 칸의 모양도 달라집니다.</figcaption></figure>
+  <figure class="case" style="margin:12px 0 10px"><img src="img/lesson11_app_tree.png" alt="가지가 갈라지는 그림으로 나타낸 의사결정트리. 마디마다 질문과 인원, 뇌졸중 인원이 적혀 있고 답을 내는 마디 여덟 칸 가운데 한 칸만 뇌졸중이라고 답한다" loading="lazy" style="width:100%;height:auto;border-radius:10px;border:1px solid var(--border)">
+    <figcaption>같은 모델을 가지 그림으로 본 것입니다. 위에서 아래로 내려가며 질문에 답하면 색칠된 <b>마디</b>에 닿습니다. 마디마다 <b>그 자리에 온 사람 수와 그중 실제 뇌졸중인 사람 수</b>가 적혀 있습니다. 답을 내는 마디 여덟 개 가운데 <b>일곱 개가 아님이라고 답합니다.</b> 그리고 고른 속성은 네 가지였지만 이 나무가 실제로 물은 것은 나이와 평균 혈당 두 가지입니다.</figcaption></figure>
+  <p>앱의 그래프에서 두 모델이 사람들을 어떻게 나누는지 비교합니다. 점 하나는 테스트 데이터의 한 사람을 나타냅니다. 질문으로 답하는 모델의 <b>첫 질문과 기준값</b>을 기록하고, 그 속성이 2절에서 두 그룹의 차이가 두드러졌던 속성과 같은지 비교합니다.</p>
 
-<h2>6. 개념 정리 — 질문이 모델을 고른다</h2>
-  <p>회귀와 분류는 모두 정답 값을 이용하는 지도학습입니다. 회귀는 수치, 분류는 범주를 예측합니다. 오늘은 관객 수에 기준을 적용해 분류용 라벨을 만들었습니다. 다른 분류 과제에서는 이미 기록된 범주를 사용할 수도 있습니다. 라벨의 의미와 만드는 기준을 먼저 확인해야 결과를 해석할 수 있습니다.</p>
-  <div class="callout warn">
-    <div class="h">⚠️ 이 숫자, 믿어도 되나?</div>
-    <p>같은 시험용 66편에서 로지스틱 회귀의 정확도는 0.924, 의사결정트리는 0.939였습니다. 이 값만으로 충분히 좋은 모델이라고 말할 수 있을까요? 다음 시간에는 항상 다수 범주로 예측하는 기준 모델과 비교하고, 성공작을 얼마나 찾아냈는지도 계산합니다.</p>
-  </div>
+  <p>세 모델의 정확도는 모두 높고 차이도 크지 않습니다. 그런데 이 중 하나는 <b>입력을 전혀 보지 않은 모델</b>입니다. 학습하지 않아도 높은 정확도를 얻는 이유는 무엇일까요?</p>
 
-  <h2>7. 확인 문제</h2>
+
+  <h2>5. 정리</h2>
+  <p>오늘은 <b>출처 확인 → 탐색 → 입력 선택 → 훈련/채점 분리 → 모델 비교</b> 순서로 진행했습니다. 마지막에는 두 분류 모델과 기준 모델의 정확도를 나란히 적었습니다.</p>
+  <p>다른 데이터로 분류 모델을 만들 때도 이 흐름을 활용할 수 있습니다. 오늘 만든 세 화면의 파일을 정리하면 다음과 같습니다.</p>
+  <div class="codewrap code"><span class="label">오늘이 끝나면</span><pre>내 저장소/
+├── main.py                 ← 첫 화면: 이 데이터는 무엇인가
+├── requirements.txt        ← 저장소에 하나. 앱 전체에 적용된다
+└── pages/
+    ├── 1_탐색.py            ← 분포·두 그룹 비교·비어 있는 값
+    └── 2_분류_모델.py        ← 두 모델 학습, 정확도 세 값</pre></div>
+  <p>4절에 기록한 세 모델의 정확도는 다음 시간에 다시 사용합니다. <b>높은 정확도가 무엇을 맞히고 무엇을 놓친 결과인지</b> 예측 결과를 네 칸으로 나누어 확인합니다.</p>
+
+  <h2>6. 확인 문제</h2>
   <div class="quiz">
-    <div class="qq"><span class="qn">문제 1</span> 다음 물음이 회귀 문제인지 분류 문제인지 골라 보세요. 답을 눌러 확인합니다.</div>
+    <div class="qq"><span class="qn">문제 1</span> 6차시 기온 예측, 7차시 영화 관객 수 예측, 9차시 영화 유형 묶기, 오늘의 뇌졸중 여부 맞히기 가운데 <b>분류</b>는 무엇일까요? 답을 눌러 확인합니다.</div>
     <div class="qitem">
-      <div class="qs">(가) 이 영화의 총 관객 수는 몇 명이 될까</div>
-      <div class="qopts"><button class="opt" data-ok="1">회귀</button><button class="opt">이진 분류</button><button class="opt">다중 분류</button></div>
-      <div class="fb">연속적인 숫자를 예측한다 — <b>회귀</b>입니다.</div>
+      <div class="qopts"><button class="opt">6차시 기온 예측</button><button class="opt">7차시 관객 수 예측</button><button class="opt">9차시 영화 유형 묶기</button><button class="opt" data-ok="1">오늘의 뇌졸중 여부</button></div>
+      <div class="fb">분류는 맞혀야 할 답이 <b>정해진 범주 가운데 하나</b>인 문제입니다. 뇌졸중 여부는 겪었다와 겪지 않았다 둘 중 하나이므로 분류입니다. 기온과 관객 수는 답이 숫자이므로 회귀이고, 영화 유형 묶기는 맞혀야 할 답 자체가 없으므로 군집입니다.</div>
     </div>
+  </div>
+  <div class="quiz">
+    <div class="qq"><span class="qn">문제 2</span> 확률로 답하는 모델이 어떤 사람에게 0.32라는 값을 계산했습니다. 이 모델은 그 사람을 어느 쪽으로 예측할까요?</div>
     <div class="qitem">
-      <div class="qs">(나) 이 영화의 기록된 관객 수는 100만 명 이상일까</div>
-      <div class="qopts"><button class="opt">회귀</button><button class="opt" data-ok="1">이진 분류</button><button class="opt">다중 분류</button></div>
-      <div class="fb">"100만 명 이상/미만" 두 범주 중 하나 — <b>이진 분류</b>입니다. 같은 영화 데이터라도 묻는 형태가 모델을 정합니다.</div>
-    </div>
-    <div class="qitem">
-      <div class="qs">(다) 이 메일은 스팸인가</div>
-      <div class="qopts"><button class="opt">회귀</button><button class="opt" data-ok="1">이진 분류</button><button class="opt">다중 분류</button></div>
-      <div class="fb">"스팸이다/아니다" 두 범주 — <b>이진 분류</b>입니다. 다중 분류는 교과서 135쪽의 책 장르처럼 범주가 셋 이상일 때입니다.</div>
+      <div class="qopts qopts-col"><button class="opt" data-ok="1">뇌졸중이 아니라고 답한다</button><button class="opt">둘 중 하나로 답하지 않는다</button><button class="opt">0보다 크므로 뇌졸중이다</button></div>
+      <div class="fb">교과서 136쪽이 적은 대로 출력값이 0.5보다 크면 양성, 작으면 음성으로 분류합니다. 0.32는 0.5보다 작으므로 답은 <b>뇌졸중이 아니다</b>입니다. 모델이 계산하는 것은 확률이지만, 그 확률을 0.5와 비교해 둘 중 하나로 답하는 것까지가 분류 모델이 하는 일입니다.</div>
     </div>
   </div>
   <div class="quiz">
-    <div class="qq"><span class="qn">문제 2</span> 흥행 성공 기준선을 100만 명에서 300만 명으로 올리면 무엇이 달라지는지 두 가지 이상 쓰시오. 자기 말로 답해 본 뒤 펼쳐 보세요.</div>
-    <details class="reveal"><summary>예시 답 펼쳐 보기</summary>
-      <p>① 성공 라벨이 붙는 영화 수가 줄어든다(정답 자체가 바뀐다). ② 모델이 새 라벨로 다시 학습되므로 예측 결과와 정확도가 달라진다. 즉 라벨 기준은 데이터에 원래 있던 사실이 아니라 사람의 판단이며, 그 판단이 모델의 성능 수치까지 바꾼다.</p>
-    </details>
-  </div>
-  <div class="quiz">
-    <div class="qq"><span class="qn">문제 3</span> 로지스틱 회귀는 이름에 "회귀"가 들어 있는데 왜 분류 모델인가? 자기 말로 답해 본 뒤 펼쳐 보세요.</div>
-    <details class="reveal"><summary>예시 답 펼쳐 보기</summary>
-      <p>입력 변수의 가중합에 시그모이드를 적용해 양성일 확률을 추정하고, 문턱값으로 범주를 정하기 때문입니다. 이 실습에서는 확률이 0.5 이상이면 성공, 미만이면 기준 미달로 분류합니다. 선형 회귀를 먼저 학습하는 절차는 아닙니다.</p>
-    </details>
-  </div>
-  <div class="quiz">
-    <div class="qq"><span class="qn">문제 4</span> 특성 중요도에서 첫 관측일 스크린 수가 0.476으로 1위였습니다. 이 결과에서 끌어낼 수 있는 말로 알맞은 것은?</div>
+    <div class="qq"><span class="qn">문제 3</span> 오늘 입력에서 체질량지수를 넣지 않았습니다. 그렇게 정한 이유는 무엇일까요?</div>
     <div class="qitem">
-      <div class="qopts qopts-col"><button class="opt">스크린을 많이 확보하면 흥행에 성공한다 — 원인이 밝혀졌다</button><button class="opt" data-ok="1">이 모델은 스크린수를 가장 큰 단서로 삼았다 — 원인인지는 이 숫자로 알 수 없다</button><button class="opt">스크린수가 1위이므로 장르는 흥행과 무관하다</button></div>
-      <div class="fb">중요도는 '무엇을 단서로 삼았나'를 보여 줄 뿐 원인의 증거가 아닙니다. 기대작에 스크린을 몰아주는 결정이 먼저였을 수도 있습니다. 중요도는 자료와 모델 설정에 따라 달라질 수 있습니다.</div>
+      <div class="qopts qopts-col"><button class="opt" data-ok="1">비어 있는 값이 있기 때문입니다.</button><button class="opt">값의 범위가 너무 넓기 때문입니다.</button><button class="opt">두 그룹의 값이 같기 때문입니다.</button></div>
+      <div class="fb">체질량지수 열에는 값이 비어 있는 사람이 있습니다. 비어 있는 값을 어떻게 다룰지는 그 자체로 하나의 판단이므로, 첫 분류 모델을 만드는 오늘은 값이 모두 채워진 네 속성만 사용했습니다. 값의 범위가 다른 것은 크기를 맞추면 되는 일이고, 두 그룹의 값이 똑같지도 않습니다.</div>
     </div>
   </div>
 
   <h2>🎒 오늘의 체크</h2>
   <ul class="checklist">
-    <li>회귀와 분류는 묻는 말과 답의 형태로 구분할 수 있다.</li>
-    <li>우리 반이 정한 흥행 성공 기준선과 그 이유를 말할 수 있다.</li>
-    <li>내 분류기가 산출한 성공 확률과 정확도를 확인했다.</li>
-    <li>트리 그림에서 모델이 먼저 던진 질문(변수)을 찾아 읽었다.</li>
+    <li>맞혀야 할 답의 모양으로 회귀와 분류를 구분해 말할 수 있다.</li>
+    <li>이 데이터의 게시자·라이선스·사사 표기를 읽고, 실제 의학적 판단에 사용하지 않는 이유를 말할 수 있다.</li>
+    <li>뇌졸중을 겪은 사람의 비율을 화면에서 확인하고 적었다.</li>
+    <li>확률이 0과 1 사이에서만 움직이고 0.5를 기준으로 답이 나뉜다는 것을 말할 수 있다.</li>
+    <li>세 모델의 정확도를 비교하고, 기준 모델이 입력을 보지 않고 한 범주로만 예측한다는 것을 설명할 수 있다.</li>
   </ul>
 
   <h2>📚 오늘의 용어</h2>
   <table class="glossary-table">
     <tr><th>용어</th><th>뜻</th></tr>
-    <tr><td class="term">분류</td><td>정해진 범주 중 하나를 예측하는 문제(이진 분류: 두 범주)</td></tr>
-    <tr><td class="term">레이블(라벨)</td><td>모델이 예측하려는 정답 값. 없으면 사람이 기준을 정해 붙인다.</td></tr>
-    <tr><td class="term">로지스틱 회귀</td><td>입력의 가중합에 시그모이드를 적용해 확률을 추정하고 분류하는 모델</td></tr>
-    <tr><td class="term">시그모이드 함수</td><td>실수 입력을 0과 1 사이 값으로 바꾸는 S자 형태의 함수</td></tr>
-    <tr><td class="term">의사결정트리</td><td>질문을 차례로 던져 가지를 나누며 분류하는 모델. 판단 순서가 그림으로 보인다.</td></tr>
-    <tr><td class="term">문턱값</td><td>확률을 범주로 바꾸는 경계(이 실습: 0.5 이상이면 양성)</td></tr>
-      <tr><td class="term">특성 중요도</td><td>모델이 예측할 때 각 변수를 얼마나 무겁게 썼는지 나타낸 값. 단서의 무게일 뿐 원인의 증거는 아니다.</td></tr>
-</table>
+    <tr><td class="term">분류</td><td>정해진 범주 가운데 하나를 맞히는 것. 범주가 둘뿐이면 이진 분류라고 한다.</td></tr>
+    <tr><td class="term">확률</td><td>0과 1 사이의 값. 로지스틱 회귀는 이 값을 계산하고, 0.5보다 크면 양성으로 분류한다(교과서 136쪽).</td></tr>
+    <tr><td class="term">로지스틱 회귀</td><td>각 범주에 해당할 확률을 바탕으로 분류하는 방법(교과서 135쪽). 이 교재에서는 확률로 답하는 모델이라고도 부른다.</td></tr>
+    <tr><td class="term">의사결정트리</td><td>규칙을 만족하는지에 따라 분류하는 모델(교과서 220쪽). 이 교재에서는 질문으로 답하는 모델이라고도 부른다.</td></tr>
+    <tr><td class="term">훈련용과 테스트용</td><td>학습에 사용하는 데이터와 점수를 매기려고 따로 떼어 둔 데이터. 7차시에서 나눈 것과 같은 방법이다.</td></tr>
+  </table>
   <p class="glossary-more"><a href="glossary.html">📚 전체 용어사전 보기 →</a></p>
 
   <div class="pager">
-    <a class="prev" href="lesson08.html"><div class="dir">← 이전</div><div class="tt">8차시 · 회귀 평가 손계산</div></a>
-    <a class="next" href="lesson10.html"><div class="dir">다음 →</div><div class="tt">10차시 · 분류 평가 손계산</div></a>
+    <a class="prev" href="lesson10.html"><div class="dir">← 이전</div><div class="tt">10차시 · 연관 분석</div></a>
+    <a class="next" href="lesson12.html"><div class="dir">다음 →</div><div class="tt">12차시 · 분류 평가</div></a>
   </div>
 </main>
 </div>
-<footer class="foot">도농고등학교 · 데이터 과학 · 학생용 교재</footer>
+
+<footer class="foot">당곡고등학교 · 데이터 과학 · 학생용 교재</footer>
 <script src="assets/copy.js"></script>
 <script src="assets/check.js"></script>
 <script src="assets/quiz.js"></script>
-<script src="assets/widgets09.js"></script>
+<script src="assets/stroke_data.js?v=2"></script>
+<script src="assets/stroke_widgets.js?v=3"></script>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+<script src="assets/answer.js?v=3"></script>
 </body>
 </html>
