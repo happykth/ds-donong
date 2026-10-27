@@ -142,7 +142,7 @@ table.mx td.miss{background:var(--red-soft);} table.mx td.miss .k{color:var(--re
 </svg>
 <div class="wctl">
   <button class="wbtn" type="button" data-case data-name="뇌졸중인지 아닌지 맞히는 모델" data-total="5110" data-pos="249" data-unit="명">뇌졸중 5,110명</button>
-  <button class="wbtn" type="button" data-case data-name="테스트 데이터 · 11차시와 같은 나눔" data-total="1533" data-pos="82" data-unit="명">테스트 데이터 1,533명</button>
+  <button class="wbtn" type="button" data-case data-name="테스트 데이터 · 9차시와 같은 나눔" data-total="1533" data-pos="82" data-unit="명">테스트 데이터 1,533명</button>
   <button class="wbtn" type="button" data-case data-name="신용카드 사기 거래를 찾는 모델" data-total="284807" data-pos="492" data-unit="건">카드 사기</button>
   <button class="wbtn" type="button" data-case data-name="희귀병을 찾는 검사" data-total="1000" data-pos="1" data-unit="명">희귀병 검사</button>
   <button class="wbtn" type="button" data-score>정확도 모델 보기</button>
@@ -354,7 +354,7 @@ table.mx td.miss{background:var(--red-soft);} table.mx td.miss .k{color:var(--re
   <p><b>오늘은 앱을 만들지 않습니다.</b> 아래 주소를 열면 ‘채점표’, ‘성능 높이기’, ‘모델 소개’ 페이지가 이미 들어 있는 앱이 바로 뜹니다. 설치할 것은 없습니다.</p>
   <p class="labgo"><a href="app/stroke/" target="_blank" rel="noopener">🩺 뇌졸중 예측 실습실 열기 →</a></p>
   <p class="mini">처음 열 때 30초에서 1분쯤 걸립니다. 수업 시작 전에 미리 한 번 열어 두세요. 직접 만들어 보고 싶으면 아래 절마다 있는 <b>① 샘플 프롬프트</b>를 그대로 사용하면 됩니다. 팀 프로젝트에서 이 흐름을 다시 쓰게 됩니다.</p>
-<details class="sample"><summary>지난 시간 앱이 없는 경우 — 11차시 완성본 네 파일</summary>
+<details class="sample"><summary>지난 시간 앱이 없는 경우 — 9차시 완성본 네 파일</summary>
 <p class="mini">직접 만들어 볼 학생 가운데 지난 시간 앱이 없거나 화면이 다른 경우, 아래 네 파일을 그대로 붙여 넣고 시작합니다. 여기에 페이지를 세 개 더합니다.</p>
 <div class="codewrap code"><span class="label">첫 번째 파일 — <button type="button" class="fname">main.py</button></span><button class="copy-btn">복사</button><pre># main.py — 뇌졸중 예측 실습실: 이 데이터가 무엇인지 소개하는 첫 화면
 import json
@@ -1226,7 +1226,7 @@ if 결측처리 == "지운다":
 st.info("고른 지표가 가장 높아지는 설정을 찾습니다. 점수가 같으면 먼저 올린 팀이 앞섭니다. "
         "마지막 목표는 안내 인원이 상담 정원 500명 이하인 채로 찾아낸 환자를 가장 많이 만드는 것입니다. "
         "지표를 높일 때 찾아낸 환자는 어떻게 되는지 함께 봅니다. 테스트 데이터로 채점합니다.")
-st.caption("비교에 쓰는 기본 설정은 11차시에서 사용한 것과 같습니다. 가중치 그대로 · 질문 3번 · 기준값 0.50. "
+st.caption("비교에 쓰는 기본 설정은 9차시에서 사용한 것과 같습니다. 가중치 그대로 · 질문 3번 · 기준값 0.50. "
            "챌린지에서는 두 모델 모두 양쪽의 가중치를 같게 맞춰 학습하고, 빈 값을 지운 채 기준값 0.60에서 시작합니다. "
            "기준값은 두 모델에 모두 적용됩니다. 확률이 기준값 이상이면 뇌졸중이라고 답합니다.")
 조절2, 조절3 = st.columns(2)
